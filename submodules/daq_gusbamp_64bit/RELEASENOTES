@@ -1,0 +1,18 @@
+=== V2 ===
+* Fixed various bugs 
+* Added multiamp support
+* Added CMake support for compilation
+
+=== V1 ===
+
+* 32-bit / 64-bit Windows support with either Matlab (32-bit and 64-bit)
+* 4-bit USB triggers with loopback tool
+* Digital filtering provided by gUSBAmp
+* Matlab level default and custom frontend filtering 
+* V1 daq file format with matlab file reader
+* Automatic file writing during data acquisition
+* GetData with specified number of samples or everything from buffer
+* noAmp and gUSBAmp daqs
+* launchGUI function
+* Common referencing and grounding
+* Bipolar settings at amp level

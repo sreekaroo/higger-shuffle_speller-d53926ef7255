@@ -1,0 +1,337 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>detectParallelPortNumberHex</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-10-20"><meta name="DC.source" content="detectParallelPortNumberHex.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">parallelPortNumber = detectParallelPortNumberHex()</a></li><li><a href="#3">Check OS Type</a></li><li><a href="#4">Detect port number of Windows machines</a></li><li><a href="#5">Look for parallel port adaptor</a></li><li><a href="#7">Look for printer port adaptors</a></li></ul></div><h2>parallelPortNumber = detectParallelPortNumberHex()<a name="1"></a></h2><pre class="codeinput"><span class="comment">%This function detects the parallel port IO address and returns the first</span>
+<span class="comment">% IO address found in Hex format. This function needs administrator</span>
+<span class="comment">% permissions, so to be able to use this function seamlessly you have</span>
+<span class="comment">% to run your matlab session with administrator permissions otherwise,</span>
+<span class="comment">% at each run of the function windows will ask weather to execute the</span>
+<span class="comment">% application or not, WHICH CAUSES MAL-FUNCTION. You can also decrease the</span>
+<span class="comment">% windows User Account Control setting to the lowest.</span>
+<span class="comment">%</span>
+<span class="comment">%   inputs:</span>
+<span class="comment">%       beepOn - (optional) input to select to have beep sound on the</span>
+<span class="comment">%           occurrence of errors detecting the parallel port IO address.</span>
+<span class="comment">%           The default value is 1;</span>
+<span class="comment">%</span>
+<span class="comment">%   returns:</span>
+<span class="comment">%       parallelPortNumber - The first IO address of the parallel port</span>
+<span class="comment">%           adaptor in hex. It will be returned empty if no parallel port</span>
+<span class="comment">%           is detected or in case of errors.</span>
+<span class="comment">%</span>
+<span class="comment">% Note1: You should start matlab with administrator permissions. (Read the</span>
+<span class="comment">% above description for more help)</span>
+<span class="comment">%</span>
+<span class="comment">% Note2: This function is for x86 based machines not for IA64 bit machines.</span>
+<span class="comment">% For IA64 bit machine you can use devconeIA64.exe and use this function</span>
+<span class="comment">% with some minor modifications.</span>
+<span class="comment">%</span>
+<span class="comment">% Created by: Hooman Nezamfar 9-17-2012</span>
+<span class="comment">% Tested with Matlab 2012a (32bit and 64 bit) &amp; Matlab 2012b(64bit)</span>
+<span class="comment">%</span>
+
+
+<span class="keyword">function</span> parallelPortNumber = detectParallelPortNumberHex(beepOn)
+
+<span class="keyword">try</span>
+</pre><pre class="codeinput">    <span class="comment">% parallelPortAdaptor = 'OX12PCI840';</span>
+    <span class="comment">% Since the adaptor name doesn't show up on some computers the adaptor</span>
+    <span class="comment">% name check has been removed.</span>
+
+    <span class="keyword">if</span> ~nargin
+        beepOn = 1; <span class="comment">% Controls beep sound on errors.</span>
+    <span class="keyword">end</span>
+
+    SHIFT_INDEX = 5;<span class="comment">% Number of characters to move after finding IO to</span>
+    <span class="comment">% find the port number. The first port number found gets selected.</span>
+
+    pcType = computer;
+</pre><h2>Check OS Type<a name="3"></a></h2><pre class="codeinput">    <span class="keyword">if</span> strcmpi(pcType,<span class="string">'PCWIN'</span>) || strcmpi(pcType,<span class="string">'PCWIN64'</span>)
+        devcon32Path = which(<span class="string">'devcon32.exe'</span>);
+        devcon32Path = devcon32Path(1:regexpi(devcon32Path,<span class="string">'\\devcon32.exe'</span>));
+        <span class="keyword">if</span> strcmpi(devcon32Path,pwd)
+            [failed, result] = system(<span class="string">'devcon32 resources =ports'</span>);
+            devconVersion = 32;
+        <span class="keyword">elseif</span> ~isempty(devcon32Path)
+            currentPath = pwd;
+            cd(devcon32Path);
+            [failed, result] = system(<span class="string">'devcon32 resources =ports'</span>);
+            devconVersion = 32;
+            cd(currentPath);
+        <span class="keyword">end</span>
+    <span class="keyword">else</span>
+        disp(<span class="string">'Not a windows machine!'</span>)
+        <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+        disp(<span class="string">'This function is for windows machines only.'</span>)
+        parallelPortNumber = [];
+        <span class="keyword">return</span>;
+    <span class="keyword">end</span>
+</pre><h2>Detect port number of Windows machines<a name="4"></a></h2><pre class="codeinput">    <span class="keyword">if</span> ~failed
+</pre><h2>Look for parallel port adaptor<a name="5"></a></h2><pre class="codeinput">        parallelStrIndex = regexpi(result,<span class="string">'Parallel Port'</span>);
+        <span class="keyword">if</span> parallelStrIndex
+            disp(<span class="string">'Parallel Port Adaptor found.'</span>)
+            portStrIndex = regexpi(result(parallelStrIndex:end),<span class="string">'IO'</span>);
+
+            IOrange = textscan(result(parallelStrIndex + <span class="keyword">...</span>
+                portStrIndex+SHIFT_INDEX :end),<span class="string">'%d%d'</span>,<span class="string">'Delimiter'</span>,<span class="string">'-'</span>);
+            parallelPortNumber = num2str(cell2mat(IOrange(1)));
+            disp([<span class="string">'Parallel Port Hex Address : '</span>,<span class="keyword">...</span>
+                parallelPortNumber])
+
+        <span class="keyword">else</span>
+</pre><pre class="codeinput">            disp(<span class="string">'No parallel port adaptor(s) found!!!'</span>)
+            <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+            parallelPortNumber = [];
+</pre><h2>Look for printer port adaptors<a name="7"></a></h2><pre class="codeinput">            printerStrIndex = regexpi(result,<span class="string">'Printer Port'</span>);
+            <span class="keyword">if</span> ~isempty(printerStrIndex) &amp;&amp; isempty(parallelPortNumber)
+                <span class="comment">%             disp('Printer Port Adaptor found.')</span>
+                portStrIndex = regexpi(result(printerStrIndex:end),<span class="string">'IO'</span>);
+
+                IOrange = textscan(result(printerStrIndex + <span class="keyword">...</span>
+                    portStrIndex+SHIFT_INDEX :end),<span class="string">'%d%d'</span>,<span class="string">'Delimiter'</span>,<span class="string">'-'</span>);
+                parallelPortNumber = num2str(cell2mat(IOrange(1)));
+                disp([<span class="string">'Printer port adaptor found with IO address: '</span>,<span class="keyword">...</span>
+                    parallelPortNumber])
+                <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+                usePrinterPort = <span class="keyword">...</span>
+                    input(<span class="string">'Do you want to use it instead? (y/n):'</span>,<span class="string">'s'</span>);
+                <span class="keyword">if</span> strcmpi(usePrinterPort,<span class="string">'y'</span>)
+                    disp([<span class="string">'Parallel Port Hex Address : '</span>,<span class="keyword">...</span>
+                        parallelPortNumber])
+                <span class="keyword">else</span>
+                    <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+                    parallelPortNumber = [];
+                    disp(<span class="string">'No parallel port number assigned!!!'</span>)
+                <span class="keyword">end</span>
+
+            <span class="keyword">else</span>
+                disp(<span class="string">'No printer port adaptor(s) found either!!!'</span>)
+                disp([<span class="string">'Matlab might have been started without '</span><span class="keyword">...</span>
+                    ,<span class="string">'administrator permissions.'</span>])
+                <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+                parallelPortNumber = [];
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">else</span>
+        <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+        <span class="keyword">switch</span> devconVersion
+            <span class="keyword">case</span> 32
+                disp(<span class="string">'devcon32.exe is not found or it is corrupted.'</span>)
+            <span class="keyword">otherwise</span>
+                disp(<span class="string">'devconXX.exe is not found or it is corrupted.'</span>)
+        <span class="keyword">end</span>
+        disp([<span class="string">'Please put the correct file along side with '</span>,<span class="keyword">...</span>
+            <span class="string">'detectParallelPortNumber function.'</span>])
+        parallelPortNumber = [];
+    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">catch</span> ME
+    <span class="keyword">if</span> beepOn, beep; <span class="keyword">end</span>
+    parallelPortNumber = [];
+    disp(<span class="string">'Error(s) happened while trying to detect parallel port.'</span>)
+    disp([<span class="string">'Error:'</span>,ME.message])
+    disp(ME.stack)
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% parallelPortNumber = detectParallelPortNumberHex()
+%This function detects the parallel port IO address and returns the first
+% IO address found in Hex format. This function needs administrator
+% permissions, so to be able to use this function seamlessly you have
+% to run your matlab session with administrator permissions otherwise,
+% at each run of the function windows will ask weather to execute the
+% application or not, WHICH CAUSES MAL-FUNCTION. You can also decrease the
+% windows User Account Control setting to the lowest.
+%
+%   inputs:
+%       beepOn - (optional) input to select to have beep sound on the
+%           occurrence of errors detecting the parallel port IO address.
+%           The default value is 1;
+%
+%   returns:
+%       parallelPortNumber - The first IO address of the parallel port
+%           adaptor in hex. It will be returned empty if no parallel port
+%           is detected or in case of errors.
+%
+% Note1: You should start matlab with administrator permissions. (Read the
+% above description for more help)
+%
+% Note2: This function is for x86 based machines not for IA64 bit machines.
+% For IA64 bit machine you can use devconeIA64.exe and use this function
+% with some minor modifications.
+%
+% Created by: Hooman Nezamfar 9-17-2012
+% Tested with Matlab 2012a (32bit and 64 bit) & Matlab 2012b(64bit)
+%
+
+
+function parallelPortNumber = detectParallelPortNumberHex(beepOn)
+
+try
+    % parallelPortAdaptor = 'OX12PCI840';
+    % Since the adaptor name doesn't show up on some computers the adaptor
+    % name check has been removed.
+    
+    if ~nargin
+        beepOn = 1; % Controls beep sound on errors.
+    end
+    
+    SHIFT_INDEX = 5;% Number of characters to move after finding IO to
+    % find the port number. The first port number found gets selected.
+    
+    pcType = computer;
+    
+    %% Check OS Type
+    if strcmpi(pcType,'PCWIN') || strcmpi(pcType,'PCWIN64')
+        devcon32Path = which('devcon32.exe');
+        devcon32Path = devcon32Path(1:regexpi(devcon32Path,'\\devcon32.exe'));
+        if strcmpi(devcon32Path,pwd)
+            [failed, result] = system('devcon32 resources =ports');
+            devconVersion = 32;
+        elseif ~isempty(devcon32Path)
+            currentPath = pwd;
+            cd(devcon32Path);
+            [failed, result] = system('devcon32 resources =ports');
+            devconVersion = 32;
+            cd(currentPath);            
+        end
+    else
+        disp('Not a windows machine!')
+        if beepOn, beep; end
+        disp('This function is for windows machines only.')
+        parallelPortNumber = [];
+        return;
+    end
+    
+    %% Detect port number of Windows machines
+    if ~failed
+        %% Look for parallel port adaptor
+        parallelStrIndex = regexpi(result,'Parallel Port');
+        if parallelStrIndex
+            disp('Parallel Port Adaptor found.')
+            portStrIndex = regexpi(result(parallelStrIndex:end),'IO');
+            
+            IOrange = textscan(result(parallelStrIndex + ...
+                portStrIndex+SHIFT_INDEX :end),'%d%d','Delimiter','-');
+            parallelPortNumber = num2str(cell2mat(IOrange(1)));
+            disp(['Parallel Port Hex Address : ',...
+                parallelPortNumber])
+            
+        else
+            disp('No parallel port adaptor(s) found!!!')
+            if beepOn, beep; end
+            parallelPortNumber = [];            
+            
+            %% Look for printer port adaptors
+            printerStrIndex = regexpi(result,'Printer Port');
+            if ~isempty(printerStrIndex) && isempty(parallelPortNumber)
+                %             disp('Printer Port Adaptor found.')
+                portStrIndex = regexpi(result(printerStrIndex:end),'IO');
+                
+                IOrange = textscan(result(printerStrIndex + ...
+                    portStrIndex+SHIFT_INDEX :end),'%d%d','Delimiter','-');
+                parallelPortNumber = num2str(cell2mat(IOrange(1)));
+                disp(['Printer port adaptor found with IO address: ',...
+                    parallelPortNumber])
+                if beepOn, beep; end
+                usePrinterPort = ...
+                    input('Do you want to use it instead? (y/n):','s');
+                if strcmpi(usePrinterPort,'y')
+                    disp(['Parallel Port Hex Address : ',...
+                        parallelPortNumber])
+                else
+                    if beepOn, beep; end
+                    parallelPortNumber = [];
+                    disp('No parallel port number assigned!!!')
+                end
+                
+            else
+                disp('No printer port adaptor(s) found either!!!')
+                disp(['Matlab might have been started without '...
+                    ,'administrator permissions.'])
+                if beepOn, beep; end
+                parallelPortNumber = [];
+            end
+        end
+        
+    else
+        if beepOn, beep; end
+        switch devconVersion
+            case 32
+                disp('devcon32.exe is not found or it is corrupted.')
+            otherwise
+                disp('devconXX.exe is not found or it is corrupted.')
+        end
+        disp(['Please put the correct file along side with ',...
+            'detectParallelPortNumber function.'])
+        parallelPortNumber = [];
+    end
+    
+catch ME
+    if beepOn, beep; end
+    parallelPortNumber = [];
+    disp('Error(s) happened while trying to detect parallel port.')
+    disp(['Error:',ME.message])
+    disp(ME.stack)
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>

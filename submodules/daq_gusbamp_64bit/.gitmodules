@@ -1,0 +1,4 @@
+[submodule "ext/signalmonitoringgui"]
+	path = ext/signalmonitoringgui
+	url = https://bitbucket.org/cogsyslab/signalmonitoringgui.git
+	branch = master

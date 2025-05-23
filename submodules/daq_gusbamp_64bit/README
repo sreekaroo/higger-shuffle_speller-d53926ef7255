@@ -1,0 +1,64 @@
+CSL DAQ Library
+
+== TLDR ==
+
+This repo contains source code for CSL DAQ that runs gUSBAmp in 32 and 64 bit architectures.
+
+If you don't want to read more (eg. not enough time due to paper deadline), but want to use it right away,
+add the matlab folder to your path and check out matlab/DAQgUSBAmp.m and test/DAQgUSBAmpTest.m for examples
+
+Library has been tested in windows 7 (32 and 64 bit) and 8 (64 bit) with Matlab 32bit and 64bit.
+We require Matlab 2013b or newer. 
+
+Make sure you have the correct drivers for gUsbAmp: https://drive.google.com/open?id=0B7QZQiQGCtnecWZnTnNfc0QtbWs
+
+If you want to compile from source, install the C-API (not needed to run):  https://drive.google.com/open?id=0B7QZQiQGCtneaHJTcmcyV3FGalk
+
+Here is the order of execution for general usage::
+(0) Turn on device and connect USB cable
+(1) Constructor: opens and inits device
+(2) OpenDevice
+(3) StartAcquisition: starts getting data (and put to file if enabled)
+(4) GetData, GetTrial, or do nothing
+(5) StopAcquistion: stops getting data and closes file if applicable
+(6) repeat (2)-(4) if needed
+(7) CloseDevice: good practice to call but the destructor will clean up
+                 appropiatedly
+
+== Folder contents ==
+
+The repo contents are as follows:
+* bin: where binaries would be located
+* doc: documentation lives here
+* ext: submodules and external stuff
+* inc: include files
+    class_handle.hpp        Header with pointer trick for mex classes
+    DAQgUSBamp.h            Header of DAQ C++ class
+    ringbuffer.h            Circular buffer implementation
+    stdafx.h                Here be dragons
+* lib: library files
+* matlab: all matlab and mex code
+    buildMex.m              Script to build mex file 
+    DAQbase.m               Matlab base class with common stuff
+    DAQgUSBAmp.m            Matlab class that wraps the daq c++ one
+    DAQnoAmp.m              Matlab class that simulates amp with random data
+    DAQgUSBampMex.cpp       Mex file to interact with C++ class
+    DAQgUSBampMex.mex32     Binary for 32bit systems (I know it's bad to put binaries in git)
+    DAQgUSBampMex.mex64     Binary for 64bit systems
+    frontEndFilter.m        Builds filter object according to spec
+    launchGUI.m             Launches GUI to look at pretty signals
+    loadSessionData.m       Loads binary file stored by daq class
+* src: c++ source code
+    stdafx.cpp:             here be dragons
+    DAQgUSBamp.cpp          Source code with DAQ C++ class
+* test: demos for now although they are all named tests because reasons
+    DAQgUSBAmpTest.cpp      C++ example code that uses DAQ class        
+    DAQgUSBAmpTest.m        Matlab example code that uses DAQ gUSBAmp class
+    DAQnoAmpTest.m          Matlab example code that uses DAQ noAmp class
+    launchGUITest.m         Example code that launches gui
+    loadSessionDataTest.m   Example code that loads file from DAQ
+
+The doc folder contains more documentation on how this library is structured. The software was designed to
+be used from Matlab or C++ directly.
+
+For more information, checkout the release notes or the doc folder

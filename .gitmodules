@@ -1,0 +1,36 @@
+[submodule "submodules/codingforBCI"]
+	path = submodules/codingforBCI
+	url = git@bitbucket.org:cogsyslab/codingforbci.git
+[submodule "submodules/languagemodel"]
+	path = submodules/languagemodel
+	url = git@bitbucket.org:cogsyslab/languagemodel.git
+[submodule "submodules/matlabutility"]
+	path = submodules/matlabutility
+	url = git@bitbucket.org:cogsyslab/matlabutility.git
+[submodule "submodules/psychtoolboxobjects"]
+	path = submodules/psychtoolboxobjects
+	url = git@bitbucket.org:cogsyslab/psychtoolboxobjects.git
+[submodule "submodules/led-stimulus-dds"]
+	path = submodules/led-stimulus-dds
+	url = git@bitbucket.org:cogsyslab/led-stimulus-dds.git
+[submodule "submodules/dictalpha"]
+	path = submodules/dictalpha
+	url = git@bitbucket.org:cogsyslab/dictalpha.git
+[submodule "submodules/modular-classifiers"]
+	path = submodules/modular-classifiers
+	url = git@bitbucket.org:cogsyslab/modular-classifiers.git
+[submodule "submodules/puzzle"]
+	path = submodules/puzzle
+	url = git@bitbucket.org:cogsyslab/puzzle.git
+[submodule "submodules/speller"]
+	path = submodules/speller
+	url = git@bitbucket.org:cogsyslab/speller.git
+[submodule "submodules/daq_gusbamp_64bit"]
+	path = submodules/daq_gusbamp_64bit
+	url = git@bitbucket.org:cogsyslab/daq_gusbamp_64bit.git
+[submodule "submodules/tobii-eyex-matlab"]
+	path = submodules/tobii-eyex-matlab
+	url = git@bitbucket.org:cogsyslab/tobii-eyex-matlab.git
+[submodule "submodules/daq-pupil"]
+	path = submodules/daq-pupil
+	url = git@bitbucket.org:cogsyslab/daq-pupil.git

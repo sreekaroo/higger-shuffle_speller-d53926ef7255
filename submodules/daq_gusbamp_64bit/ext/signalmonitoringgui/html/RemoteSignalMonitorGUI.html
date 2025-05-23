@@ -1,0 +1,670 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>RemoteSignalMonitorGUI</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-06-13"><meta name="DC.source" content="RemoteSignalMonitorGUI.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">classdef RemoteSignalMonitorGUI &lt; handle</a></li><li><a href="#2">Constructor</a></li><li><a href="#3">function start(self,autoLaunchRemoteGUI)</a></li><li><a href="#4">function stop(self)</a></li><li><a href="#5">function mode = getDisplayMode(self,timeout)</a></li><li><a href="#6">function setChannelNames(self,newChannelNames)</a></li><li><a href="#7">function setSampleRate(self,newSampleRate)</a></li><li><a href="#8">function setChannelStatus(self,channel,status)</a></li><li><a href="#9">function addData(self,data)</a></li><li><a href="#10">function runClient(self)</a></li></ul></div><h2>classdef RemoteSignalMonitorGUI &lt; handle<a name="1"></a></h2><p>Instantiates a remotely connected graphical user interface to display signal data from the data acquisition unit.</p><pre class="codeinput"><span class="keyword">classdef</span> RemoteSignalMonitorGUI &lt; handle
+
+    <span class="keyword">properties</span> (Access = private)
+
+        <span class="comment">% Core objects/structs.</span>
+        TCPIPObject;
+        BCIPacketStruct;
+        GUIObject;
+
+        <span class="comment">% Variables.</span>
+        channelNames;
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span> (Access = public)
+</pre><h2>Constructor<a name="2"></a></h2><pre class="codeinput">        <span class="keyword">function</span> self = RemoteSignalMonitorGUI()
+
+            addpath(genpath(<span class="string">'.'</span>)); <span class="comment">% In case it isn't already done.</span>
+
+            self.TCPIPObject = [];
+            self.BCIPacketStruct = [];
+            self.GUIObject = [];
+
+            self.channelNames = {};
+
+        <span class="keyword">end</span>
+</pre><h2>function start(self,autoLaunchRemoteGUI)<a name="3"></a></h2><p>Operation: Creates and displays remote GUI window/frame and elements. Input variables:   &gt; autoLaunchRemoteGUI - boolean scalar; if true, then the remote GUI is automatically launched.   &gt; mainIP - [1,N] character matrix; determines the IP address of the main server.   &gt; remoteIP - [1,N] character matrix; determines the IP address of the remote client.   &gt; port - integer scalar; determines the port number of the server and client. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> start(self,autoLaunchRemoteGUI,mainIP,remoteIP,port)
+
+            assert(isa(autoLaunchRemoteGUI,<span class="string">'logical'</span>));
+
+            assert(isa(mainIP,<span class="string">'char'</span>));
+            assert(isvector(mainIP));
+
+            assert(isa(remoteIP,<span class="string">'char'</span>));
+            assert(isvector(remoteIP));
+
+            assert(isnumeric(port));
+            assert(isscalar(port));
+            assert(mod(port,1) == 0);
+
+            <span class="keyword">if</span> autoLaunchRemoteGUI
+
+                dos([<span class="string">'matlab -nosplash -r "addpath(genpath(''.''));GUI=RemoteSignalMonitorGUI();GUI.runClient('''</span>,mainIP,<span class="string">''','</span>,num2str(port),<span class="string">')" &amp;'</span>]);
+
+            <span class="keyword">end</span>
+
+            [~,main2GUICommObjectStruct,self.BCIPacketStruct] = sender2receiverCommInitialize(<span class="string">'main'</span>,<span class="string">'GUI'</span>,false,[],remoteIP,port);
+            self.TCPIPObject = main2GUICommObjectStruct.main2GUICommObject;
+
+        <span class="keyword">end</span>
+</pre><h2>function stop(self)<a name="4"></a></h2><p>Operation: Destroys remote GUI window/frame and elements. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> stop(self)
+
+            <span class="keyword">if</span> ~isempty(self.TCPIPObject)
+
+                outPacket.header = self.BCIPacketStruct.HDR.STOP;
+                outPacket.data = [];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+            <span class="keyword">end</span>
+
+            fclose(self.TCPIPObject);
+
+        <span class="keyword">end</span>
+</pre><h2>function mode = getDisplayMode(self,timeout)<a name="5"></a></h2><p>Operation: Returns the mode of the GUI. The mode is a numeral that denotes the type of data that is to be displayed by the GUI. Input variables:   &gt; timeout - double scalar; number of seconds under which the display mode must be obtained. Output variables:   &gt; mode - integer scalar; denotes the type of data that is to be displayed by the GUI.</p><pre class="codeinput">        <span class="keyword">function</span> mode = getDisplayMode(self,timeout)
+
+            assert(isa(timeout,<span class="string">'double'</span>)); <span class="comment">% Assert that newSampleRate is a double type.</span>
+            assert(isscalar(timeout)); <span class="comment">% Assert that newSampleRate is a double scalar.</span>
+            assert(0 &lt; timeout); <span class="comment">% Assert that newSampleRate is positive.</span>
+
+            mode = 0;
+
+            <span class="keyword">if</span> ~isempty(self.TCPIPObject)
+
+                <span class="comment">% Send a request to the remote GUI for the display mode.</span>
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                outPacket.data = <span class="string">'outPacket.header=self.BCIPacketStruct.HDR.STATE;outPacket.data=[''mode='',num2str(self.GUIObject.getDisplayMode()),'';''];sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);'</span>;
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+                <span class="comment">% Stall until there are bytes available.</span>
+                startTime = GetSecs();
+                duration = 0;
+                <span class="keyword">while</span> (duration &lt; timeout) &amp;&amp; (self.TCPIPObject.BytesAvailable == 0);
+                    currentTime = GetSecs();
+                    duration = currentTime - startTime;
+                <span class="keyword">end</span>
+
+                <span class="comment">% Receive the return packet.</span>
+                inPacket = receiveBCIPacket(self.TCPIPObject,self.BCIPacketStruct);
+
+                <span class="keyword">if</span> inPacket.header == self.BCIPacketStruct.HDR.STATE;
+
+                    <span class="comment">% Evaluate packet data.</span>
+                    eval(inPacket.data);
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function setChannelNames(self,newChannelNames)<a name="6"></a></h2><p>Operation: Changes the names of the channels for which data is to be displayed. Input variables:   &gt; newChannelNames - [1,N] cell matrix, each cell contains a [1,X] character matrix; new names of the channels for which data is to be displayed. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> setChannelNames(self,newChannelNames)
+
+            assert(isa(newChannelNames,<span class="string">'cell'</span>)); <span class="comment">% Assert that newChannelNames is a cell type.</span>
+            assert(ndims(newChannelNames) == 2); <span class="comment">% Assert that newChannelNames is a {0,1,2} dimensional cell matrix.</span>
+            assert(size(newChannelNames,1) &lt;= 1); <span class="comment">% Assert that newChannelNames is either a [1,N] cell matrix, or an empty cell matrix.</span>
+            <span class="keyword">for</span> i = length(newChannelNames);
+
+                assert(isa(newChannelNames{i},<span class="string">'char'</span>)); <span class="comment">% Assert that every element of newChannelNames is a character matrix.</span>
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Ensure that the data isn't being sent uneccesarily.</span>
+            <span class="keyword">if</span> ~isequal([self.channelNames{:}],[newChannelNames{:}])
+
+                <span class="comment">% If all of the above asserts are successful, send the new channel names to the remote GUI in a packet.</span>
+                <span class="keyword">if</span> ~isempty(self.TCPIPObject)
+
+                    outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                    outPacket.data = [<span class="string">'newChannelNames='</span>,<span class="string">'{'</span>,sprintf(<span class="string">'''%s'','</span>,newChannelNames{1:end-1}),sprintf(<span class="string">'''%s'''</span>,newChannelNames{end}),<span class="string">'};'</span>];
+                    sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+                <span class="keyword">end</span>
+
+                self.channelNames = newChannelNames;
+
+            <span class="keyword">end</span>
+
+
+
+        <span class="keyword">end</span>
+</pre><h2>function setSampleRate(self,newSampleRate)<a name="7"></a></h2><p>Operation: Changes the names of the channels for which data is to be displayed. Input variables:   &gt; newSampleRate - scalar double; number of samples of data to be displayed per second. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> setSampleRate(self,newSampleRate)
+
+            assert(isa(newSampleRate,<span class="string">'double'</span>)); <span class="comment">% Assert that newSampleRate is a double type.</span>
+            assert(isscalar(newSampleRate)); <span class="comment">% Assert that newSampleRate is a double scalar.</span>
+            assert(0 &lt; newSampleRate &amp;&amp; newSampleRate &lt; Inf); <span class="comment">% Assert that newSampleRate is positive and finite.</span>
+
+            <span class="comment">% If all of the above asserts are successful, send the new sample rate to the remote GUI in a packet.</span>
+            <span class="keyword">if</span> ~isempty(self.TCPIPObject)
+
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                outPacket.data = [<span class="string">'newSampleRate=hex2num('''</span>,num2hex(newSampleRate),<span class="string">''');'</span>];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function setChannelStatus(self,channel,status)<a name="8"></a></h2><p>Operation: Changes the channel status image next to a channel name label. Input variables:   &gt; channel - integer scalar; index of the channel to be updated.   &gt; status - double scalar; denotes the status of the channel. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> setChannelStatus(self,channel,status)
+
+            assert(isnumeric(channel)); <span class="comment">% Assert that channel is a numeric type.</span>
+            assert(mod(channel,1) == 0); <span class="comment">% Assert that channel is an integer type.</span>
+            assert(isscalar(channel)); <span class="comment">% Assert that channel is an integer scalar.</span>
+            assert(1 &lt;= channel &amp;&amp; channel &lt;= length(self.channelStatuses)); <span class="comment">% Assert that channel is in the range of indices of the channelStatuses matrix.</span>
+
+            assert(isa(status,<span class="string">'double'</span>)); <span class="comment">% Assert that status is a double type.</span>
+            assert(isscalar(status)); <span class="comment">% Assert that status is a double scalar.</span>
+            assert(0 &lt;= status &amp;&amp; status &lt;= 1); <span class="comment">% Assert that status is within the range [0,1].</span>
+
+            <span class="comment">% If all of the above asserts are successful, send the channel status to the remote GUI in a packet.</span>
+            <span class="keyword">if</span> ~isempty(self.TCPIPObject)
+
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                outPacket.data = [<span class="string">'channelStatus=[str2num('</span>,num2str(channel),<span class="string">'),hex2num('''</span>,num2hex(status),<span class="string">''')];'</span>];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function addData(self,data)<a name="9"></a></h2><p>Operation: Appends the input data to the buffer of data to be displayed. Input variables:   &gt; data - [M,N] double matrix; new data to be appended to the buffer of data to be displayed. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> addData(self,newData)
+
+            assert(isa(newData,<span class="string">'double'</span>)); <span class="comment">% Assert that data is a double type.</span>
+            assert(ndims(newData) == 2); <span class="comment">% Assert that data is a {0,1,2} dimensional cell matrix.</span>
+            assert(size(newData,2) == length(self.channelNames)); <span class="comment">% Assert that data is a [M,N] matrix, for any M and such that N is the number of channels.</span>
+
+            <span class="comment">% If all of the above asserts are successful, send the data to the remote GUI in a packet.</span>
+            <span class="keyword">if</span> ~isempty(self.TCPIPObject)
+
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                hexData = num2hex(newData);
+                outPacket.data = [<span class="string">'newData=reshape(hex2num(reshape('''</span>,reshape(hexData,1,numel(hexData)),<span class="string">''','</span>,num2str(size(hexData,1)),<span class="string">','</span>,num2str(size(hexData,2)),<span class="string">')),'</span>,num2str(size(newData,1)),<span class="string">','</span>,num2str(size(newData,2)),<span class="string">');'</span>];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function runClient(self)<a name="10"></a></h2><p>Operation: Runs the remote GUI client. Input variables:   &gt; mainIP - [1,N] character matrix; determines the IP address of the main server.   &gt; mainPort - integer scalar; determines the port number of the main server. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> runClient(self,mainIP,mainPort)
+
+            <span class="comment">% Initialise TCPIP connection.</span>
+            [~,CommObjectStruct,self.BCIPacketStruct] = sender2receiverCommInitialize(<span class="string">'GUI'</span>,<span class="string">'main'</span>,false,[],mainIP,mainPort);
+            self.TCPIPObject = CommObjectStruct.GUI2mainCommObject;
+
+            <span class="comment">% Initialise GUI object.</span>
+            self.GUIObject = SignalMonitorGUI();
+            self.GUIObject.start();
+
+            <span class="comment">% Initialise loop.</span>
+            loop = true;
+            <span class="keyword">while</span> loop
+
+                <span class="comment">% Check if the GUI has been closed.</span>
+                <span class="keyword">if</span> ~self.GUIObject.isStarted()
+
+                    <span class="comment">% Terminate client.</span>
+                    loop = false;
+
+                <span class="keyword">else</span>
+
+                    <span class="comment">% Check if there are incoming packets.</span>
+                    <span class="keyword">if</span> self.TCPIPObject.BytesAvailable
+
+                        inPacket = receiveBCIPacket(self.TCPIPObject,self.BCIPacketStruct);
+
+                        <span class="keyword">switch</span> inPacket.header
+
+                            <span class="keyword">case</span> self.BCIPacketStruct.HDR.STOP
+
+                                <span class="comment">% Terminate client.</span>
+                                loop = false;
+
+                            <span class="keyword">case</span> self.BCIPacketStruct.HDR.STATE
+
+                                <span class="comment">% Evaluate packet data.</span>
+                                eval(inPacket.data);
+
+                                <span class="comment">% Set channel names.</span>
+                                <span class="keyword">if</span> exist(<span class="string">'newChannelNames'</span>,<span class="string">'var'</span>);
+
+                                    self.GUIObject.setChannelNames(newChannelNames);
+                                    clear <span class="string">newChannelNames</span>;
+
+                                <span class="keyword">end</span>
+
+                                <span class="comment">% Set sample rate.</span>
+                                <span class="keyword">if</span> exist(<span class="string">'newSampleRate'</span>,<span class="string">'var'</span>);
+
+                                    self.GUIObject.setSampleRate(newSampleRate);
+                                    clear <span class="string">newSampleRate</span>;
+
+                                <span class="keyword">end</span>
+
+                                <span class="comment">% Set channel status.</span>
+                                <span class="keyword">if</span> exist(<span class="string">'channelStatus'</span>,<span class="string">'var'</span>);
+
+                                    self.GUIObject.setChannelStatus(channelStatus(1),channelStatus(2));
+                                    clear <span class="string">channelStatus</span>;
+
+                                <span class="keyword">end</span>
+
+                                <span class="comment">% Add data.</span>
+                                <span class="keyword">if</span> exist(<span class="string">'newData'</span>,<span class="string">'var'</span>);
+
+                                    self.GUIObject.addData(newData);
+                                    clear <span class="string">newData</span>;
+
+                                <span class="keyword">end</span>
+
+                        <span class="keyword">end</span>
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+                pause(0.01);
+
+            <span class="keyword">end</span>
+
+            self.GUIObject.stop();
+            fclose(self.TCPIPObject);
+            close;
+            clear;
+            exit;
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% classdef RemoteSignalMonitorGUI < handle
+% Instantiates a remotely connected graphical user interface to display signal data from the data acquisition unit.
+
+classdef RemoteSignalMonitorGUI < handle
+    
+    properties (Access = private)
+        
+        % Core objects/structs.
+        TCPIPObject;
+        BCIPacketStruct;
+        GUIObject;
+        
+        % Variables.
+        channelNames;
+        
+    end
+    
+    methods (Access = public)
+        
+        %% Constructor
+        function self = RemoteSignalMonitorGUI()
+            
+            addpath(genpath('.')); % In case it isn't already done.
+            
+            self.TCPIPObject = [];
+            self.BCIPacketStruct = [];
+            self.GUIObject = [];
+            
+            self.channelNames = {};
+            
+        end
+        
+        
+        %% function start(self,autoLaunchRemoteGUI)
+        % Operation: Creates and displays remote GUI window/frame and elements.
+        % Input variables:
+        %   > autoLaunchRemoteGUI - boolean scalar; if true, then the remote GUI is automatically launched.
+        %   > mainIP - [1,N] character matrix; determines the IP address of the main server.
+        %   > remoteIP - [1,N] character matrix; determines the IP address of the remote client.
+        %   > port - integer scalar; determines the port number of the server and client.
+        % Output variables: N/A
+        function start(self,autoLaunchRemoteGUI,mainIP,remoteIP,port)
+            
+            assert(isa(autoLaunchRemoteGUI,'logical'));
+            
+            assert(isa(mainIP,'char'));
+            assert(isvector(mainIP));
+            
+            assert(isa(remoteIP,'char'));
+            assert(isvector(remoteIP));
+            
+            assert(isnumeric(port));
+            assert(isscalar(port));
+            assert(mod(port,1) == 0);
+            
+            if autoLaunchRemoteGUI
+                
+                dos(['matlab -nosplash -r "addpath(genpath(''.''));GUI=RemoteSignalMonitorGUI();GUI.runClient(''',mainIP,''',',num2str(port),')" &']);
+                
+            end
+            
+            [~,main2GUICommObjectStruct,self.BCIPacketStruct] = sender2receiverCommInitialize('main','GUI',false,[],remoteIP,port);
+            self.TCPIPObject = main2GUICommObjectStruct.main2GUICommObject;
+            
+        end
+        
+        %% function stop(self)
+        % Operation: Destroys remote GUI window/frame and elements.
+        % Input variables: N/A
+        % Output variables: N/A
+        function stop(self)
+            
+            if ~isempty(self.TCPIPObject)
+                
+                outPacket.header = self.BCIPacketStruct.HDR.STOP;
+                outPacket.data = [];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+                
+            end
+            
+            fclose(self.TCPIPObject);
+            
+        end
+        
+        %% function mode = getDisplayMode(self,timeout)
+        % Operation: Returns the mode of the GUI. The mode is a numeral that denotes the type of data that is to be displayed by the GUI.
+        % Input variables:
+        %   > timeout - double scalar; number of seconds under which the display mode must be obtained.
+        % Output variables:
+        %   > mode - integer scalar; denotes the type of data that is to be displayed by the GUI.
+        function mode = getDisplayMode(self,timeout)
+            
+            assert(isa(timeout,'double')); % Assert that newSampleRate is a double type.
+            assert(isscalar(timeout)); % Assert that newSampleRate is a double scalar.
+            assert(0 < timeout); % Assert that newSampleRate is positive.
+            
+            mode = 0;
+            
+            if ~isempty(self.TCPIPObject)
+                
+                % Send a request to the remote GUI for the display mode.
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                outPacket.data = 'outPacket.header=self.BCIPacketStruct.HDR.STATE;outPacket.data=[''mode='',num2str(self.GUIObject.getDisplayMode()),'';''];sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);';
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+                
+                % Stall until there are bytes available.
+                startTime = GetSecs();
+                duration = 0;
+                while (duration < timeout) && (self.TCPIPObject.BytesAvailable == 0);
+                    currentTime = GetSecs();
+                    duration = currentTime - startTime;
+                end
+                
+                % Receive the return packet.
+                inPacket = receiveBCIPacket(self.TCPIPObject,self.BCIPacketStruct);
+                    
+                if inPacket.header == self.BCIPacketStruct.HDR.STATE;
+                    
+                    % Evaluate packet data.
+                    eval(inPacket.data);
+
+                end
+                
+            end
+            
+        end
+        
+        %% function setChannelNames(self,newChannelNames)
+        % Operation: Changes the names of the channels for which data is to be displayed.
+        % Input variables:
+        %   > newChannelNames - [1,N] cell matrix, each cell contains a [1,X] character matrix; new names of the channels for which data is to be displayed.
+        % Output variables: N/A
+        function setChannelNames(self,newChannelNames)
+            
+            assert(isa(newChannelNames,'cell')); % Assert that newChannelNames is a cell type.
+            assert(ndims(newChannelNames) == 2); % Assert that newChannelNames is a {0,1,2} dimensional cell matrix.
+            assert(size(newChannelNames,1) <= 1); % Assert that newChannelNames is either a [1,N] cell matrix, or an empty cell matrix.
+            for i = length(newChannelNames);
+                
+                assert(isa(newChannelNames{i},'char')); % Assert that every element of newChannelNames is a character matrix.
+                
+            end
+            
+            % Ensure that the data isn't being sent uneccesarily.
+            if ~isequal([self.channelNames{:}],[newChannelNames{:}])
+            
+                % If all of the above asserts are successful, send the new channel names to the remote GUI in a packet.
+                if ~isempty(self.TCPIPObject)
+
+                    outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                    outPacket.data = ['newChannelNames=','{',sprintf('''%s'',',newChannelNames{1:end-1}),sprintf('''%s''',newChannelNames{end}),'};'];
+                    sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+
+                end
+
+                self.channelNames = newChannelNames;
+            
+            end
+            
+            
+            
+        end
+        
+        %% function setSampleRate(self,newSampleRate)
+        % Operation: Changes the names of the channels for which data is to be displayed.
+        % Input variables:
+        %   > newSampleRate - scalar double; number of samples of data to be displayed per second.
+        % Output variables: N/A
+        function setSampleRate(self,newSampleRate)
+            
+            assert(isa(newSampleRate,'double')); % Assert that newSampleRate is a double type.
+            assert(isscalar(newSampleRate)); % Assert that newSampleRate is a double scalar.
+            assert(0 < newSampleRate && newSampleRate < Inf); % Assert that newSampleRate is positive and finite.
+            
+            % If all of the above asserts are successful, send the new sample rate to the remote GUI in a packet.
+            if ~isempty(self.TCPIPObject)
+                
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                outPacket.data = ['newSampleRate=hex2num(''',num2hex(newSampleRate),''');'];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+                
+            end
+            
+        end
+        
+        %% function setChannelStatus(self,channel,status)
+        % Operation: Changes the channel status image next to a channel name label.
+        % Input variables:
+        %   > channel - integer scalar; index of the channel to be updated.
+        %   > status - double scalar; denotes the status of the channel.
+        % Output variables: N/A
+        function setChannelStatus(self,channel,status)
+            
+            assert(isnumeric(channel)); % Assert that channel is a numeric type.
+            assert(mod(channel,1) == 0); % Assert that channel is an integer type.
+            assert(isscalar(channel)); % Assert that channel is an integer scalar.
+            assert(1 <= channel && channel <= length(self.channelStatuses)); % Assert that channel is in the range of indices of the channelStatuses matrix.
+            
+            assert(isa(status,'double')); % Assert that status is a double type.
+            assert(isscalar(status)); % Assert that status is a double scalar.
+            assert(0 <= status && status <= 1); % Assert that status is within the range [0,1].
+            
+            % If all of the above asserts are successful, send the channel status to the remote GUI in a packet.
+            if ~isempty(self.TCPIPObject)
+                
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                outPacket.data = ['channelStatus=[str2num(',num2str(channel),'),hex2num(''',num2hex(status),''')];'];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+                
+            end
+            
+        end
+        
+        %% function addData(self,data)
+        % Operation: Appends the input data to the buffer of data to be displayed.
+        % Input variables:
+        %   > data - [M,N] double matrix; new data to be appended to the buffer of data to be displayed.
+        % Output variables: N/A
+        function addData(self,newData)
+            
+            assert(isa(newData,'double')); % Assert that data is a double type.
+            assert(ndims(newData) == 2); % Assert that data is a {0,1,2} dimensional cell matrix.
+            assert(size(newData,2) == length(self.channelNames)); % Assert that data is a [M,N] matrix, for any M and such that N is the number of channels.
+            
+            % If all of the above asserts are successful, send the data to the remote GUI in a packet.
+            if ~isempty(self.TCPIPObject)
+                
+                outPacket.header = self.BCIPacketStruct.HDR.STATE;
+                hexData = num2hex(newData);
+                outPacket.data = ['newData=reshape(hex2num(reshape(''',reshape(hexData,1,numel(hexData)),''',',num2str(size(hexData,1)),',',num2str(size(hexData,2)),')),',num2str(size(newData,1)),',',num2str(size(newData,2)),');'];
+                sendBCIPacket(self.TCPIPObject,self.BCIPacketStruct,outPacket);
+                
+            end
+            
+        end
+        
+        %% function runClient(self)
+        % Operation: Runs the remote GUI client.
+        % Input variables:
+        %   > mainIP - [1,N] character matrix; determines the IP address of the main server.
+        %   > mainPort - integer scalar; determines the port number of the main server.
+        % Output variables: N/A
+        function runClient(self,mainIP,mainPort)
+            
+            % Initialise TCPIP connection.
+            [~,CommObjectStruct,self.BCIPacketStruct] = sender2receiverCommInitialize('GUI','main',false,[],mainIP,mainPort);
+            self.TCPIPObject = CommObjectStruct.GUI2mainCommObject;
+            
+            % Initialise GUI object.
+            self.GUIObject = SignalMonitorGUI();
+            self.GUIObject.start();
+            
+            % Initialise loop.
+            loop = true;
+            while loop
+                
+                % Check if the GUI has been closed.
+                if ~self.GUIObject.isStarted()
+                    
+                    % Terminate client.
+                    loop = false;
+                
+                else
+                    
+                    % Check if there are incoming packets.
+                    if self.TCPIPObject.BytesAvailable
+
+                        inPacket = receiveBCIPacket(self.TCPIPObject,self.BCIPacketStruct);
+
+                        switch inPacket.header
+
+                            case self.BCIPacketStruct.HDR.STOP
+
+                                % Terminate client.
+                                loop = false;
+
+                            case self.BCIPacketStruct.HDR.STATE
+
+                                % Evaluate packet data.
+                                eval(inPacket.data);
+
+                                % Set channel names.
+                                if exist('newChannelNames','var');
+
+                                    self.GUIObject.setChannelNames(newChannelNames);
+                                    clear newChannelNames;
+
+                                end
+
+                                % Set sample rate.
+                                if exist('newSampleRate','var');
+
+                                    self.GUIObject.setSampleRate(newSampleRate);
+                                    clear newSampleRate;
+
+                                end
+
+                                % Set channel status.
+                                if exist('channelStatus','var');
+
+                                    self.GUIObject.setChannelStatus(channelStatus(1),channelStatus(2));
+                                    clear channelStatus;
+
+                                end
+
+                                % Add data.
+                                if exist('newData','var');
+
+                                    self.GUIObject.addData(newData);
+                                    clear newData;
+
+                                end
+
+                        end
+
+                    end
+                
+                end
+                
+                pause(0.01);
+            
+            end
+            
+            self.GUIObject.stop();
+            fclose(self.TCPIPObject);
+            close;
+            clear;
+            exit;
+            
+        end
+        
+    end
+    
+end
+##### SOURCE END #####
+--></body></html>

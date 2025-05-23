@@ -1,0 +1,199 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>GUIParameters</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-06-13"><meta name="DC.source" content="GUIParameters.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">GUI Layout.</a></li><li><a href="#2">GUI Text.</a></li><li><a href="#3">GUI Modes.</a></li><li><a href="#4">GUI X Scales.</a></li><li><a href="#5">GUI Y Scales.</a></li></ul></div><h2>GUI Layout.<a name="1"></a></h2><p>Expressed in percentage of the window/frame. [left,bottom,width,height]</p><pre class="codeinput">GUIParameterStruct.menuPanelRect = [0,0.9,1,0.075];
+GUIParameterStruct.channelPanelRect = [0,0,0.2,0.9];
+GUIParameterStruct.displayAxesRect = [0.25,0.09,0.7,0.72];
+
+<span class="comment">% Expressed in percentage of the menu panel.</span>
+<span class="comment">% [left,bottom,width,height]</span>
+GUIParameterStruct.modeTitleRect = [0.025,0.5,(1/3)-0.05,0.5];
+GUIParameterStruct.xAxisScaleTitleRect = [(1/3)+0.025,0.5,(1/3)-0.05,0.5];
+GUIParameterStruct.yAxisScaleTitleRect = [(2/3)+0.025,0.5,(1/3)-0.05,0.5];
+GUIParameterStruct.modeMenuRect = [0.025,0,(1/3)-0.05,0.5];
+GUIParameterStruct.xAxisScaleMenuRect = [(1/3)+0.025,0,(1/3)-0.05,0.5];
+GUIParameterStruct.yAxisScaleMenuRect = [(2/3)+0.025,0,(1/3)-0.05,0.5];
+
+<span class="comment">% Expressed in percentage of the channel panel.</span>
+<span class="comment">% [left,bottom,width,height]</span>
+GUIParameterStruct.channelNameTitleRect = [0.025,0.9,(1/3)-0.05,0.1];
+GUIParameterStruct.channelToggleDisplayTitleRect = [(1/3)+0.025,0.9,(1/3)-0.05,0.1];
+GUIParameterStruct.channelStatusTitleRect = [(2/3)+0.025,0.9,(1/3)-0.05,0.1];
+GUIParameterStruct.channelNamesLabelsRect = [0.025,0.1,(1/3)-0.05,0.8];
+GUIParameterStruct.channelToggleDisplayButtonsRect = [(1/3)+0.025,0.1,(1/3)-0.05,0.8];
+GUIParameterStruct.channelStatusImagesRect = [(2/3)+0.025,0.1,(1/3)-0.05,0.8];
+GUIParameterStruct.enableAllChannelDisplaysButtonRect = [0.025,0.025,(1/3)-0.05,0.05];
+GUIParameterStruct.disableAllChannelDisplaysButtonRect = [(1/3)+0.025,0.025,(1/3)-0.05,0.05];
+GUIParameterStruct.pauseButtonRect = [(2/3)+0.025,0.025,(1/3)-0.05,0.05];
+</pre><h2>GUI Text.<a name="2"></a></h2><pre class="codeinput">GUIParameterStruct.fontSize = 12;
+GUIParameterStruct.frameTitle = <span class="string">'Signal Monitor GUI'</span>; <span class="comment">% Title of the main frame/window.</span>
+GUIParameterStruct.modeTitle = <span class="string">'Display Mode'</span>; <span class="comment">% Title above the menu to select different modes.</span>
+GUIParameterStruct.xAxisScaleTitle = <span class="string">'Select X-Scale (Seconds to display)'</span>; <span class="comment">% Title above the menu to select different X scales.</span>
+GUIParameterStruct.yAxisScaleTitle = <span class="string">'Select Y-Scale (Volts / div.)'</span>; <span class="comment">% Title above the menu to select different Y scales.</span>
+GUIParameterStruct.channelNameTitle = <span class="string">'Channel Names'</span>; <span class="comment">% Title above the list of channel names.</span>
+GUIParameterStruct.channelToggleDisplayTitle = <span class="string">'Toggle Channel Display'</span>; <span class="comment">% Title above the list of buttons used to toggle channel display for individual channels.</span>
+GUIParameterStruct.channelStatusTitle = <span class="string">'Channel Status'</span>; <span class="comment">% Title above the list of images used to indicate the status of the channels.</span>
+GUIParameterStruct.enableAllChannelDisplaysButtonText = <span class="string">'Enable all'</span>; <span class="comment">% Text on the button used to enable all the channels at once.</span>
+GUIParameterStruct.disableAllChannelDisplaysButtonText = <span class="string">'Disable all'</span>; <span class="comment">% Text on the button used to disable all the channels at once.</span>
+GUIParameterStruct.pauseButtonText.UNPAUSED = <span class="string">'Pause'</span>; <span class="comment">% Text on button used to pause and unpause the display.</span>
+GUIParameterStruct.pauseButtonText.PAUSED = <span class="string">'Unpause'</span>; <span class="comment">% Text on button used to pause and unpause the display.</span>
+</pre><h2>GUI Modes.<a name="3"></a></h2><pre class="codeinput">GUIParameterStruct.modeOptions = {<span class="keyword">...</span>
+                                  <span class="string">'No Data'</span>,<span class="keyword">...</span><span class="comment"> % 1</span>
+                                  <span class="string">'Raw Data'</span>,<span class="keyword">...</span><span class="comment"> % 2</span>
+                                  <span class="string">'Filtered Data'</span>,<span class="keyword">...</span><span class="comment"> % 3</span>
+                                  <span class="string">'Attention Monitoring Data'</span><span class="keyword">...</span><span class="comment"> % 4</span>
+                                 }; <span class="comment">% Drop down menu options for the menu to select different modes.</span>
+</pre><h2>GUI X Scales.<a name="4"></a></h2><pre class="codeinput">GUIParameterStruct.xAxisLabel = <span class="string">'Seconds'</span>;
+GUIParameterStruct.xAxisUnit = <span class="string">'Seconds'</span>;
+GUIParameterStruct.xAxisScaleValues = [20,10,5,2];
+GUIParameterStruct.xAxisScaleInitialValueIndex = 1;
+</pre><h2>GUI Y Scales.<a name="5"></a></h2><pre class="codeinput">GUIParameterStruct.yAxisLabel = <span class="string">'Channel'</span>;
+GUIParameterStruct.yAxisUnit{1} = <span class="string">''</span>;
+GUIParameterStruct.yAxisScaleValues{1} = [0];
+GUIParameterStruct.yAxisScaleInitialValueIndices(1) = 1;
+GUIParameterStruct.yAxisScaleMultipier(1) = 1;
+GUIParameterStruct.yAxisUnit{2} = <span class="string">'Micro Volts'</span>;
+GUIParameterStruct.yAxisScaleValues{2} = [1E6,5E5,1E5,5E5,1E4,5E3,1E3,5E2,1E2,5E1,1E1,5E0,1E0];
+GUIParameterStruct.yAxisScaleInitialValueIndices(2) = 9;
+GUIParameterStruct.yAxisScaleMultipier(2) = 1E-6;
+GUIParameterStruct.yAxisUnit{3} = <span class="string">'Micro Volts'</span>;
+GUIParameterStruct.yAxisScaleValues{3} = [1E6,5E5,1E5,5E5,1E4,5E3,1E3,5E2,1E2,5E1,1E1,5E0,1E0];
+GUIParameterStruct.yAxisScaleInitialValueIndices(3) = 9;
+GUIParameterStruct.yAxisScaleMultipier(3) = 1E-6;
+GUIParameterStruct.yAxisUnit{4} = <span class="string">'(Micro Volts)&sup2;'</span>;
+GUIParameterStruct.yAxisScaleValues{4} = [1E12,5E11,1E11,5E10,1E10,5E9,1E9,5E8,1E8,5E7,1E7,5E6,1E6];
+GUIParameterStruct.yAxisScaleInitialValueIndices(4) = 9;
+GUIParameterStruct.yAxisScaleMultipier(4) = 1E-12;
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% GUI Layout.
+% Expressed in percentage of the window/frame.
+% [left,bottom,width,height]
+GUIParameterStruct.menuPanelRect = [0,0.9,1,0.075];
+GUIParameterStruct.channelPanelRect = [0,0,0.2,0.9];
+GUIParameterStruct.displayAxesRect = [0.25,0.09,0.7,0.72];
+
+% Expressed in percentage of the menu panel.
+% [left,bottom,width,height]
+GUIParameterStruct.modeTitleRect = [0.025,0.5,(1/3)-0.05,0.5];
+GUIParameterStruct.xAxisScaleTitleRect = [(1/3)+0.025,0.5,(1/3)-0.05,0.5];
+GUIParameterStruct.yAxisScaleTitleRect = [(2/3)+0.025,0.5,(1/3)-0.05,0.5];
+GUIParameterStruct.modeMenuRect = [0.025,0,(1/3)-0.05,0.5];
+GUIParameterStruct.xAxisScaleMenuRect = [(1/3)+0.025,0,(1/3)-0.05,0.5];
+GUIParameterStruct.yAxisScaleMenuRect = [(2/3)+0.025,0,(1/3)-0.05,0.5];
+
+% Expressed in percentage of the channel panel.
+% [left,bottom,width,height]
+GUIParameterStruct.channelNameTitleRect = [0.025,0.9,(1/3)-0.05,0.1];
+GUIParameterStruct.channelToggleDisplayTitleRect = [(1/3)+0.025,0.9,(1/3)-0.05,0.1];
+GUIParameterStruct.channelStatusTitleRect = [(2/3)+0.025,0.9,(1/3)-0.05,0.1];
+GUIParameterStruct.channelNamesLabelsRect = [0.025,0.1,(1/3)-0.05,0.8];
+GUIParameterStruct.channelToggleDisplayButtonsRect = [(1/3)+0.025,0.1,(1/3)-0.05,0.8];
+GUIParameterStruct.channelStatusImagesRect = [(2/3)+0.025,0.1,(1/3)-0.05,0.8];
+GUIParameterStruct.enableAllChannelDisplaysButtonRect = [0.025,0.025,(1/3)-0.05,0.05];
+GUIParameterStruct.disableAllChannelDisplaysButtonRect = [(1/3)+0.025,0.025,(1/3)-0.05,0.05];
+GUIParameterStruct.pauseButtonRect = [(2/3)+0.025,0.025,(1/3)-0.05,0.05];
+
+%% GUI Text.
+GUIParameterStruct.fontSize = 12;
+GUIParameterStruct.frameTitle = 'Signal Monitor GUI'; % Title of the main frame/window.
+GUIParameterStruct.modeTitle = 'Display Mode'; % Title above the menu to select different modes.
+GUIParameterStruct.xAxisScaleTitle = 'Select X-Scale (Seconds to display)'; % Title above the menu to select different X scales.
+GUIParameterStruct.yAxisScaleTitle = 'Select Y-Scale (Volts / div.)'; % Title above the menu to select different Y scales.
+GUIParameterStruct.channelNameTitle = 'Channel Names'; % Title above the list of channel names.
+GUIParameterStruct.channelToggleDisplayTitle = 'Toggle Channel Display'; % Title above the list of buttons used to toggle channel display for individual channels.
+GUIParameterStruct.channelStatusTitle = 'Channel Status'; % Title above the list of images used to indicate the status of the channels.
+GUIParameterStruct.enableAllChannelDisplaysButtonText = 'Enable all'; % Text on the button used to enable all the channels at once.
+GUIParameterStruct.disableAllChannelDisplaysButtonText = 'Disable all'; % Text on the button used to disable all the channels at once.
+GUIParameterStruct.pauseButtonText.UNPAUSED = 'Pause'; % Text on button used to pause and unpause the display.
+GUIParameterStruct.pauseButtonText.PAUSED = 'Unpause'; % Text on button used to pause and unpause the display.
+
+%% GUI Modes.
+GUIParameterStruct.modeOptions = {...
+                                  'No Data',... % 1
+                                  'Raw Data',... % 2
+                                  'Filtered Data',... % 3
+                                  'Attention Monitoring Data'... % 4
+                                 }; % Drop down menu options for the menu to select different modes.
+
+%% GUI X Scales.
+GUIParameterStruct.xAxisLabel = 'Seconds';
+GUIParameterStruct.xAxisUnit = 'Seconds';
+GUIParameterStruct.xAxisScaleValues = [20,10,5,2];
+GUIParameterStruct.xAxisScaleInitialValueIndex = 1;
+
+%% GUI Y Scales.
+GUIParameterStruct.yAxisLabel = 'Channel';
+GUIParameterStruct.yAxisUnit{1} = '';
+GUIParameterStruct.yAxisScaleValues{1} = [0];
+GUIParameterStruct.yAxisScaleInitialValueIndices(1) = 1;
+GUIParameterStruct.yAxisScaleMultipier(1) = 1;
+GUIParameterStruct.yAxisUnit{2} = 'Micro Volts';
+GUIParameterStruct.yAxisScaleValues{2} = [1E6,5E5,1E5,5E5,1E4,5E3,1E3,5E2,1E2,5E1,1E1,5E0,1E0];
+GUIParameterStruct.yAxisScaleInitialValueIndices(2) = 9;
+GUIParameterStruct.yAxisScaleMultipier(2) = 1E-6;
+GUIParameterStruct.yAxisUnit{3} = 'Micro Volts';
+GUIParameterStruct.yAxisScaleValues{3} = [1E6,5E5,1E5,5E5,1E4,5E3,1E3,5E2,1E2,5E1,1E1,5E0,1E0];
+GUIParameterStruct.yAxisScaleInitialValueIndices(3) = 9;
+GUIParameterStruct.yAxisScaleMultipier(3) = 1E-6;
+GUIParameterStruct.yAxisUnit{4} = '(Micro Volts)²';
+GUIParameterStruct.yAxisScaleValues{4} = [1E12,5E11,1E11,5E10,1E10,5E9,1E9,5E8,1E8,5E7,1E7,5E6,1E6];
+GUIParameterStruct.yAxisScaleInitialValueIndices(4) = 9;
+GUIParameterStruct.yAxisScaleMultipier(4) = 1E-12;
+##### SOURCE END #####
+--></body></html>

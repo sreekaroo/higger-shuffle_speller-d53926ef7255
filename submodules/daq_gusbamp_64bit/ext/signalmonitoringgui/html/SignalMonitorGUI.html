@@ -1,0 +1,1614 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>SignalMonitorGUI</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-06-13"><meta name="DC.source" content="SignalMonitorGUI.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">classdef SignalMonitorGUI &lt; handle</a></li><li><a href="#2">Constructor</a></li><li><a href="#3">function start(self)</a></li><li><a href="#4">function stop(self)</a></li><li><a href="#5">started = isStarted(self)</a></li><li><a href="#6">function mode = getDisplayMode(self)</a></li><li><a href="#7">function setChannelNames(self,newChannelNames)</a></li><li><a href="#8">function setSampleRate(self,newSampleRate)</a></li><li><a href="#9">function setChannelStatus(self,channel,status)</a></li><li><a href="#10">function addData(self,data)</a></li><li><a href="#13">function resize(self,~,~)</a></li><li><a href="#14">function toggleChannelDisplay(self,~,~,channel)</a></li><li><a href="#15">function enableAllChannelDisplays(self,~,~)</a></li><li><a href="#16">function disableAllChannelDisplays(self,~,~)</a></li><li><a href="#17">function updateStatusImage(self,channel)</a></li><li><a href="#18">function pauseDisplay(self,~,~)</a></li></ul></div><h2>classdef SignalMonitorGUI &lt; handle<a name="1"></a></h2><p>Instantiates a graphical user interface to display signal data from the data acquisition unit.</p><pre class="codeinput"><span class="keyword">classdef</span> SignalMonitorGUI &lt; handle
+
+    <span class="keyword">properties</span> ( Access = private )
+
+        <span class="comment">% Data.</span>
+        displayMode; <span class="comment">% Integer scalar; denotes the type of data that is to be displayed by the GUI.</span>
+        xScaleIndex; <span class="comment">% Integer scalar; denotes the index of the scale of the x-axis that is to be used by the GUI.</span>
+        yScaleIndices; <span class="comment">% [1,D] Integer matrix; denotes the indices of the scale of the y-axis that is to be used by the GUI.</span>
+        channelNames; <span class="comment">% [1,N] cell matrix, each cell contains a [1,X] character matrix; new names of the channels for which data is to be displayed.</span>
+        channelStatuses; <span class="comment">% [1,N] double matrix, each element is in the range [0,1]; denotes the statuses of the channels.</span>
+        channelDisplays; <span class="comment">% [1,N] boolean matrix; determines if the channel is to be displayed.</span>
+        isPaused; <span class="comment">% Boolean scalar; determines if the display is paused.</span>
+        sampleRate; <span class="comment">% Double scalar; number of samples of data to be displayed per second.</span>
+        dataBuffer; <span class="comment">% [M,N+1] double matrix; data to be displayed when the GUI is not paused. The first row of this matrix is the ordinate data, while the rest is the abscissa data.</span>
+        dataBufferZeroPointer; <span class="comment">% Integer scalar; index of the first element in the data buffer.</span>
+        pauseBuffer; <span class="comment">% [M,N+1] double matrix; data to be displayed when the GUI is paused. The first row of this matrix is the ordinate data, while the rest is the abscissa data.</span>
+        pauseBufferZeroPointer; <span class="comment">% Integer scalar; index of the first element in the pause buffer.</span>
+
+        <span class="comment">% UI elements.</span>
+        frame; <span class="comment">% Figure; window/frame that contains the GUI.</span>
+
+        menuPanel; <span class="comment">% UI Panel; contains the drop down menus.</span>
+        modeTitleLabel; <span class="comment">% Text box; displays the title of the mode menu;</span>
+        modeMenu; <span class="comment">% Drop down menu; allows the user to select the GUI display mode.</span>
+        xAxisScaleTitleLabel; <span class="comment">% Text box; displays the title of the x-axis scale menu;</span>
+        xAxisScaleMenu; <span class="comment">% Drop down menu; allows the user to select the number of seconds worth of data to be displayed.</span>
+        yAxisScaleTitleLabel; <span class="comment">% Text box; displays the title of the y-axis scale menu;</span>
+        yAxisScaleMenu; <span class="comment">% Drop down menu; allows the user to select the scaling of the voltage of the data to be displayed.</span>
+
+        channelPanel; <span class="comment">% UI Panel; contains the channel information.</span>
+        channelNameTitleLabel; <span class="comment">% Text box; displays the title of the channel name labels.</span>
+        channelToggleDisplayTitleLabel; <span class="comment">% Text box; displays the title of the channel display toggle buttons.</span>
+        channelStatusTitleLabel; <span class="comment">% Text box; displays the title of channel status images.</span>
+        channelNameLabels; <span class="comment">% Text box matrix; display the channel names.</span>
+        channelToggleDisplayButtons; <span class="comment">% Toggle button matrix; allow the user to toggle the display of inidividual channels.</span>
+        channelStatusImages; <span class="comment">% Image matrix; denote the statuses of the channels.</span>
+        enableAllChannelDisplaysButton; <span class="comment">% Push button; used to enable all the channels at once.</span>
+        disableAllChannelDisplaysButton; <span class="comment">% Push button; used to disable all the channels at once.</span>
+        pauseButton; <span class="comment">% Toggle button; used to pause and unpause the display.</span>
+
+        displayAxes; <span class="comment">% Axes; displays the data plots.</span>
+
+        <span class="comment">% UI element parameters.</span>
+        GUIParameterStruct; <span class="comment">% Struct; contains the data pertaining to the GUI layout.</span>
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span> ( Access = public )
+</pre><h2>Constructor<a name="2"></a></h2><pre class="codeinput">        <span class="keyword">function</span> self = SignalMonitorGUI()
+
+            addpath(genpath(<span class="string">'.'</span>));
+            GUIParameters;
+            self.GUIParameterStruct = GUIParameterStruct;
+            self.displayMode = 1;
+            self.xScaleIndex = self.GUIParameterStruct.xAxisScaleInitialValueIndex;
+            self.yScaleIndices = self.GUIParameterStruct.yAxisScaleInitialValueIndices;
+            self.channelNames = {};
+            self.channelStatuses = [];
+            self.channelDisplays = [];
+            self.isPaused = false;
+            self.sampleRate = 1;
+            self.dataBuffer = [];
+            self.dataBufferZeroPointer = 0;
+            self.pauseBuffer = [];
+            self.pauseBufferZeroPointer = 0;
+
+        <span class="keyword">end</span>
+</pre><h2>function start(self)<a name="3"></a></h2><p>Operation: Creates and displays GUI window/frame and elements. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> start(self)
+
+            <span class="comment">% Check if the GUI window/frame does not exist.</span>
+            <span class="keyword">if</span> ~self.isStarted();
+
+                <span class="comment">% Create new GUI window/frame.</span>
+                self.frame = figure(<span class="keyword">...</span>
+                                    <span class="string">'Name'</span>,self.GUIParameterStruct.frameTitle,<span class="keyword">...</span>
+                                    <span class="string">'NumberTitle'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+                                    <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                    <span class="string">'Toolbar'</span>,<span class="string">'None'</span>,<span class="keyword">...</span>
+                                    <span class="string">'Menu'</span>,<span class="string">'None'</span>,<span class="keyword">...</span>
+                                    <span class="string">'ResizeFcn'</span>,{@self.resize}<span class="keyword">...</span>
+                                   );
+
+                <span class="comment">% Create the menu panel.</span>
+                self.menuPanel = uipanel(<span class="keyword">...</span>
+                                         self.frame,<span class="keyword">...</span>
+                                         <span class="string">'Units'</span>,<span class="string">'Normalized'</span><span class="keyword">...</span>
+                                        );
+
+                <span class="comment">% Add the menu titles to the menu panel.</span>
+                self.modeTitleLabel = uicontrol(<span class="keyword">...</span>
+                                                self.menuPanel,<span class="keyword">...</span>
+                                                <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                <span class="string">'String'</span>,self.GUIParameterStruct.modeTitle,<span class="keyword">...</span>
+                                                <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                               );
+
+                self.xAxisScaleTitleLabel = uicontrol(<span class="keyword">...</span>
+                                                  self.menuPanel,<span class="keyword">...</span>
+                                                  <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                  <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                  <span class="string">'String'</span>,self.GUIParameterStruct.xAxisScaleTitle,<span class="keyword">...</span>
+                                                  <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                                 );
+
+                self.yAxisScaleTitleLabel = uicontrol(<span class="keyword">...</span>
+                                                      self.menuPanel,<span class="keyword">...</span>
+                                                      <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                      <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                      <span class="string">'String'</span>,self.GUIParameterStruct.yAxisScaleTitle,<span class="keyword">...</span>
+                                                      <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                                     );
+
+                <span class="comment">% Add the drop down menus to the menu panel.</span>
+                self.modeMenu = uicontrol(<span class="keyword">...</span>
+                                          self.menuPanel,<span class="keyword">...</span>
+                                          <span class="string">'Style'</span>,<span class="string">'Popupmenu'</span>,<span class="keyword">...</span>
+                                          <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                          <span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>,<span class="keyword">...</span>
+                                          <span class="string">'String'</span>,self.GUIParameterStruct.modeOptions,<span class="keyword">...</span>
+                                          <span class="string">'Value'</span>,self.displayMode,<span class="keyword">...</span>
+                                          <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                          <span class="string">'Callback'</span>,{@self.updateDisplayMode}<span class="keyword">...</span>
+                                         );
+
+                self.xAxisScaleMenu = uicontrol(<span class="keyword">...</span>
+                                            self.menuPanel,<span class="keyword">...</span>
+                                            <span class="string">'Style'</span>,<span class="string">'Popupmenu'</span>,<span class="keyword">...</span>
+                                            <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                            <span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>,<span class="keyword">...</span>
+                                            <span class="string">'String'</span>,cellfun(@(array)([num2str(array),<span class="string">' '</span>,self.GUIParameterStruct.xAxisUnit]),num2cell(self.GUIParameterStruct.xAxisScaleValues), <span class="string">'UniformOutput'</span>, false),<span class="keyword">...</span>
+                                            <span class="string">'Value'</span>,self.xScaleIndex,<span class="keyword">...</span>
+                                            <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                            <span class="string">'Callback'</span>,{@self.updateAxes}<span class="keyword">...</span>
+                                           );
+
+                self.yAxisScaleMenu = uicontrol(<span class="keyword">...</span>
+                                                self.menuPanel,<span class="keyword">...</span>
+                                                <span class="string">'Style'</span>,<span class="string">'Popupmenu'</span>,<span class="keyword">...</span>
+                                                <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                <span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>,<span class="keyword">...</span>
+                                                <span class="string">'String'</span>,cellfun(@(array)([num2str(array),<span class="string">' '</span>,self.GUIParameterStruct.yAxisUnit{self.displayMode}]),num2cell(self.GUIParameterStruct.yAxisScaleValues{self.displayMode}), <span class="string">'UniformOutput'</span>, false),<span class="keyword">...</span>
+                                                <span class="string">'Value'</span>,self.yScaleIndices(self.displayMode),<span class="keyword">...</span>
+                                                <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                                <span class="string">'Callback'</span>,{@self.updateAxes}<span class="keyword">...</span>
+                                               );
+
+                <span class="comment">% Create the channel panel.</span>
+                self.channelPanel = uipanel(<span class="keyword">...</span>
+                                            self.frame,<span class="keyword">...</span>
+                                            <span class="string">'Units'</span>,<span class="string">'Normalized'</span><span class="keyword">...</span>
+                                           );
+
+                <span class="comment">% Add the channel titles to the channel panel.</span>
+                self.channelNameTitleLabel = uicontrol(<span class="keyword">...</span>
+                                                   self.channelPanel,<span class="keyword">...</span>
+                                                   <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                   <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                   <span class="string">'String'</span>,self.GUIParameterStruct.channelNameTitle,<span class="keyword">...</span>
+                                                   <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                                  );
+                self.channelToggleDisplayTitleLabel = uicontrol(<span class="keyword">...</span>
+                                                                self.channelPanel,<span class="keyword">...</span>
+                                                                <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                                <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                                <span class="string">'String'</span>,self.GUIParameterStruct.channelToggleDisplayTitle,<span class="keyword">...</span>
+                                                                <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                                               );
+                self.channelStatusTitleLabel = uicontrol(<span class="keyword">...</span>
+                                                         self.channelPanel,<span class="keyword">...</span>
+                                                         <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                         <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                         <span class="string">'String'</span>,self.GUIParameterStruct.channelStatusTitle,<span class="keyword">...</span>
+                                                         <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                                        );
+
+                <span class="comment">% Declare the channel UI elements.</span>
+                self.channelNameLabels = zeros(1,length(self.channelNames));
+                self.channelToggleDisplayButtons = zeros(1,length(self.channelNames));
+                self.channelStatusImages = zeros(1,length(self.channelNames));
+
+                <span class="comment">% Initialise the channel UI elements.</span>
+                <span class="keyword">for</span> i = 1:length(self.channelNames);
+
+                    <span class="comment">% Initialise the channel name labels.</span>
+                    self.channelNameLabels(i) = uicontrol(<span class="keyword">...</span>
+                                                          self.channelPanel,<span class="keyword">...</span>
+                                                          <span class="string">'Style'</span>,<span class="string">'Text'</span>,<span class="keyword">...</span>
+                                                          <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                          <span class="string">'String'</span>,self.channelNames{i},<span class="keyword">...</span>
+                                                          <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                                         );
+
+                    <span class="comment">% Initialise the channel toggle buttons.</span>
+                    self.channelToggleDisplayButtons(i) = uicontrol(<span class="keyword">...</span>
+                                                                    self.channelPanel,<span class="keyword">...</span>
+                                                                    <span class="string">'Style'</span>,<span class="string">'Togglebutton'</span>,<span class="keyword">...</span>
+                                                                    <span class="string">'Value'</span>,self.channelDisplays(i),<span class="keyword">...</span>
+                                                                    <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                                    <span class="string">'String'</span>,num2str(length(self.channelNames) - i + 1),<span class="keyword">...</span>
+                                                                    <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                                                    <span class="string">'Callback'</span>,{@self.toggleChannelDisplay,i}<span class="keyword">...</span>
+                                                                   );
+
+                    <span class="comment">% Initialise the channel status images.</span>
+                    self.channelStatusImages(i) = uipanel(<span class="keyword">...</span>
+                                                            self.channelPanel,<span class="keyword">...</span>
+                                                            <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                            <span class="string">'BackgroundColor'</span>,[0,1,0]<span class="keyword">...</span>
+                                                           );
+
+                    <span class="comment">% Update the channel status images.</span>
+                    updateStatusImage(self,i);
+
+                <span class="keyword">end</span>
+
+                <span class="comment">% Initialise the macro-control buttons.</span>
+                self.enableAllChannelDisplaysButton = uicontrol(<span class="keyword">...</span>
+                                                                self.channelPanel,<span class="keyword">...</span>
+                                                                <span class="string">'Style'</span>,<span class="string">'Pushbutton'</span>,<span class="keyword">...</span>
+                                                                <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                                <span class="string">'String'</span>,self.GUIParameterStruct.enableAllChannelDisplaysButtonText,<span class="keyword">...</span>
+                                                                <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                                                <span class="string">'Callback'</span>,{@self.enableAllChannelDisplays}<span class="keyword">...</span>
+                                                               );
+                self.disableAllChannelDisplaysButton = uicontrol(<span class="keyword">...</span>
+                                                                self.channelPanel,<span class="keyword">...</span>
+                                                                <span class="string">'Style'</span>,<span class="string">'Pushbutton'</span>,<span class="keyword">...</span>
+                                                                <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                                                <span class="string">'String'</span>,self.GUIParameterStruct.disableAllChannelDisplaysButtonText,<span class="keyword">...</span>
+                                                                <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                                                <span class="string">'Callback'</span>,{@self.disableAllChannelDisplays}<span class="keyword">...</span>
+                                                               );
+
+                self.pauseButton = uicontrol(<span class="keyword">...</span>
+                                             self.channelPanel,<span class="keyword">...</span>
+                                             <span class="string">'Style'</span>,<span class="string">'Togglebutton'</span>,<span class="keyword">...</span>
+                                             <span class="string">'Value'</span>,self.isPaused,<span class="keyword">...</span>
+                                             <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                             <span class="string">'String'</span>,self.GUIParameterStruct.pauseButtonText.UNPAUSED,<span class="keyword">...</span>
+                                             <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize,<span class="keyword">...</span>
+                                             <span class="string">'Callback'</span>,{@self.pauseDisplay}<span class="keyword">...</span>
+                                            );
+
+                <span class="comment">% Create the data axes.</span>
+                self.displayAxes = axes(<span class="keyword">...</span>
+                                        <span class="string">'Parent'</span>,self.frame,<span class="keyword">...</span>
+                                        <span class="string">'Units'</span>,<span class="string">'Normalized'</span>,<span class="keyword">...</span>
+                                        <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                                       );
+
+                <span class="comment">% Update the display axes.</span>
+                self.updateAxes();
+
+                <span class="comment">% Maximise GUI window/frame.</span>
+                drawnow;
+                f = get(handle(self.frame),<span class="string">'JavaFrame'</span>);
+                f.setMaximized(true);
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function stop(self)<a name="4"></a></h2><p>Operation: Destroys GUI window/frame and elements. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> stop(self)
+
+            <span class="keyword">if</span> self.isStarted();
+
+                <span class="comment">% Destroy window/frame.</span>
+                close(self.frame);
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>started = isStarted(self)<a name="5"></a></h2><p>Operation: Destroys GUI window/frame and elements. Input variables: N/A Output variables:   &gt; started - boolean scalar; determines if the GUI window exists.</p><pre class="codeinput">        <span class="keyword">function</span> started = isStarted(self)
+
+            started = isa(handle(self.frame),<span class="string">'figure'</span>);
+
+        <span class="keyword">end</span>
+</pre><h2>function mode = getDisplayMode(self)<a name="6"></a></h2><p>Operation: Returns the mode of the GUI. The mode is a numeral that denotes the type of data that is to be displayed by the GUI. Input variables: N/A Output variables:   &gt; mode - integer scalar; denotes the type of data that is to be displayed by the GUI.</p><pre class="codeinput">        <span class="keyword">function</span> mode = getDisplayMode(self)
+
+            mode = self.displayMode;
+
+        <span class="keyword">end</span>
+</pre><h2>function setChannelNames(self,newChannelNames)<a name="7"></a></h2><p>Operation: Changes the names of the channels for which data is to be displayed. Input variables:   &gt; newChannelNames - [1,N] cell matrix, each cell contains a [1,X] character matrix; new names of the channels for which data is to be displayed. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> setChannelNames(self,newChannelNames)
+
+            assert(isa(newChannelNames,<span class="string">'cell'</span>)); <span class="comment">% Assert that newChannelNames is a cell type.</span>
+            assert(ndims(newChannelNames) == 2); <span class="comment">% Assert that newChannelNames is a {0,1,2} dimensional cell matrix.</span>
+            assert(size(newChannelNames,1) &lt;= 1); <span class="comment">% Assert that newChannelNames is either a [1,N] cell matrix, or an empty cell matrix.</span>
+            <span class="keyword">for</span> i = length(newChannelNames);
+
+                assert(isa(newChannelNames{i},<span class="string">'char'</span>)); <span class="comment">% Assert that every element of newChannelNames is a character matrix.</span>
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% If all of the above asserts are successful, set the value of channelNames to newChannelNames.</span>
+            self.channelNames = fliplr(newChannelNames);
+
+            <span class="comment">% Reset channel info.</span>
+            self.channelStatuses = ones(1,length(self.channelNames));
+            self.channelDisplays = true(1,length(self.channelNames));
+            self.dataBuffer = zeros(0,length(self.channelNames) + 1);
+            self.dataBufferZeroPointer = 0;
+            self.pauseBuffer = zeros(0,length(self.channelNames) + 1);
+            self.pauseBufferZeroPointer = 0;
+
+            <span class="comment">% Check if the GUI window/frame exists.</span>
+            <span class="keyword">if</span> self.isStarted();
+
+                <span class="comment">% Redraw the GUI.</span>
+                self.stop();
+                self.start();
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function setSampleRate(self,newSampleRate)<a name="8"></a></h2><p>Operation: Changes the names of the channels for which data is to be displayed. Input variables:   &gt; newSampleRate - double scalar; number of samples of data to be displayed per second. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> setSampleRate(self,newSampleRate)
+
+            assert(isa(newSampleRate,<span class="string">'double'</span>)); <span class="comment">% Assert that newSampleRate is a double type.</span>
+            assert(isscalar(newSampleRate)); <span class="comment">% Assert that newSampleRate is a double scalar.</span>
+            assert(0 &lt; newSampleRate &amp;&amp; newSampleRate &lt; Inf); <span class="comment">% Assert that newSampleRate is positive and finite.</span>
+
+            <span class="comment">% If all of the above asserts are successful, set the value of sampleRate to newSampleRate.</span>
+            self.sampleRate = newSampleRate;
+
+        <span class="keyword">end</span>
+</pre><h2>function setChannelStatus(self,channel,status)<a name="9"></a></h2><p>Operation: Changes the channel status image next to a channel name label. Input variables:   &gt; channel - integer scalar; index of the channel to be updated.   &gt; status - double scalar; denotes the status of the channel. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> setChannelStatus(self,channel,status)
+
+            assert(isnumeric(channel)); <span class="comment">% Assert that channel is a numeric type.</span>
+            assert(mod(channel,1) == 0); <span class="comment">% Assert that channel is an integer type.</span>
+            assert(isscalar(channel)); <span class="comment">% Assert that channel is an integer scalar.</span>
+            assert(1 &lt;= channel &amp;&amp; channel &lt;= length(self.channelStatuses)); <span class="comment">% Assert that channel is in the range of indices of the channelStatuses matrix.</span>
+
+            assert(isa(status,<span class="string">'double'</span>)); <span class="comment">% Assert that status is a double type.</span>
+            assert(isscalar(status)); <span class="comment">% Assert that status is a double scalar.</span>
+            assert(0 &lt;= status &amp;&amp; status &lt;= 1); <span class="comment">% Assert that status is within the range [0,1].</span>
+
+            <span class="comment">% If all of the above asserts are successful, set the value of channelStatuses(channel) to status.</span>
+            channel = length(self.channelNames) - channel + 1; <span class="comment">% First flip the channel.</span>
+            self.channelStatuses(channel) = status;
+
+            <span class="comment">% Update the channel status images.</span>
+            self.updateStatusImage(channel);
+
+            <span class="comment">% Update the display axes.</span>
+            self.updateAxes();
+
+        <span class="keyword">end</span>
+</pre><h2>function addData(self,data)<a name="10"></a></h2><p>Operation: Adds the specified data to the buffer of data to be displayed. Input variables:   &gt; data - [M,N] double matrix; new data to be added to the buffer of data to be displayed. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> addData(self,newData)
+
+            assert(isa(newData,<span class="string">'double'</span>)); <span class="comment">% Assert that data is a double type.</span>
+            assert(ndims(newData) == 2); <span class="comment">% Assert that data is a {0,1,2} dimensional cell matrix.</span>
+            assert(size(newData,2) == length(self.channelNames)); <span class="comment">% Assert that data is a [M,N] matrix, for any M and such that N is the number of channels.</span>
+
+            <span class="comment">% If all of the above asserts are successful, get the maximum value for the buffer size, in seconds.</span>
+            bufferLimit = max(self.GUIParameterStruct.xAxisScaleValues);
+
+            <span class="comment">% Flip the data.</span>
+            newData = fliplr(newData);
+
+            <span class="comment">% Add the data to the data buffer.</span>
+            <span class="keyword">if</span> size(self.dataBuffer,1) == 0
+
+                timestampData = transpose([0:(size(newData,1) - 1)]);
+                timestampData = (timestampData / self.sampleRate);
+                self.dataBufferZeroPointer = 1;
+
+            <span class="keyword">else</span>
+
+                timestampData = transpose([1:size(newData,1)]);
+                timestampData = (timestampData / self.sampleRate) + self.dataBuffer(end,1);
+
+            <span class="keyword">end</span>
+            newData = [timestampData,newData];
+            self.dataBuffer = [self.dataBuffer;newData];
+
+            <span class="comment">% If the data exceeds the buffer limit...</span>
+            <span class="keyword">if</span> self.dataBuffer(end,1) &gt; bufferLimit
+
+                <span class="comment">% Iterate backwards over the data, from the last to the first element.</span>
+                <span class="comment">% For each element in this iteration, subtract the buffer limit from the time stamp data.</span>
+                <span class="comment">% When the first element to not exceed the buffer limit is reached, set the data buffer zero pointer to the index of that element plus one, and then terminate the loop.</span>
+                index = size(self.dataBuffer,1);
+                loop = true;
+                <span class="keyword">while</span> loop
+
+                    <span class="comment">% If the index is less than 1, terminate the loop.</span>
+                    <span class="keyword">if</span> index &lt; 1
+
+                        loop = false;
+
+                    <span class="keyword">else</span>
+
+                        <span class="comment">% Check if the current element exceeds the buffer limit.</span>
+                        <span class="keyword">if</span> self.dataBuffer(index,1) &gt; bufferLimit
+
+                            <span class="comment">% Subtract the buffer limit from the time stamp data.</span>
+                            self.dataBuffer(index,1) = self.dataBuffer(index,1) - bufferLimit;
+
+                            index = index - 1;
+
+                        <span class="keyword">else</span>
+
+                            <span class="comment">% Set the data buffer zero pointer to the index of that element plus one, and then terminate the loop.</span>
+                            self.dataBufferZeroPointer = index + 1;
+                            loop = false;
+
+                        <span class="keyword">end</span>
+
+                    <span class="keyword">end</span>
+
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Iterate backwards over the data, from the zero pointer to the first element.</span>
+            <span class="comment">% If the time stamp data of the respective elements is less than the time stamp data of the last element, remove that element from the data.</span>
+            <span class="comment">% If the zero pointer is reached, terminate the loop.</span>
+            index = self.dataBufferZeroPointer - 1;
+            loop = true;
+            lowerBound = 1;
+            <span class="keyword">while</span> loop
+
+                <span class="comment">% If the index is less than 1, terminate the loop.</span>
+                <span class="keyword">if</span> index &lt; 1
+
+                    loop = false;
+
+                <span class="keyword">else</span>
+
+                    <span class="keyword">if</span> self.dataBuffer(index,1) &lt; self.dataBuffer(end,1)
+
+                        lowerBound = index + 1;
+                        loop = false;
+
+                    <span class="keyword">else</span>
+
+                        index = index - 1;
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+            self.dataBufferZeroPointer = self.dataBufferZeroPointer - lowerBound + 1;
+            indices = [lowerBound:size(self.dataBuffer,1)];
+            self.dataBuffer = self.dataBuffer(indices,:);
+
+            <span class="comment">% Update the display axes.</span>
+            self.updateAxes();
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+
+    methods ( Access = private )
+</pre><h2>function resize(self,~,~)<a name="13"></a></h2><p>Operation: If the GUI window/frame exists, resets the positions of all its elements. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> resize(self,~,~)
+
+            <span class="comment">% Check if the GUI window/frame exists.</span>
+            <span class="keyword">if</span> self.isStarted();
+
+                <span class="comment">% Resize menu panel elements.</span>
+                set(self.menuPanel,<span class="string">'Position'</span>,self.GUIParameterStruct.menuPanelRect);
+                set(self.modeTitleLabel,<span class="string">'Position'</span>,self.GUIParameterStruct.modeTitleRect);
+                set(self.xAxisScaleTitleLabel,<span class="string">'Position'</span>,self.GUIParameterStruct.xAxisScaleTitleRect);
+                set(self.yAxisScaleTitleLabel,<span class="string">'Position'</span>,self.GUIParameterStruct.yAxisScaleTitleRect);
+                set(self.modeMenu,<span class="string">'Position'</span>,self.GUIParameterStruct.modeMenuRect);
+                set(self.xAxisScaleMenu,<span class="string">'Position'</span>,self.GUIParameterStruct.xAxisScaleMenuRect);
+                set(self.yAxisScaleMenu,<span class="string">'Position'</span>,self.GUIParameterStruct.yAxisScaleMenuRect);
+
+                <span class="comment">% Resize channel panel elements.</span>
+                set(self.channelPanel,<span class="string">'Position'</span>,self.GUIParameterStruct.channelPanelRect);
+                set(self.channelNameTitleLabel,<span class="string">'Position'</span>,self.GUIParameterStruct.channelNameTitleRect);
+                set(self.channelToggleDisplayTitleLabel,<span class="string">'Position'</span>,self.GUIParameterStruct.channelToggleDisplayTitleRect);
+                set(self.channelStatusTitleLabel,<span class="string">'Position'</span>,self.GUIParameterStruct.channelStatusTitleRect);
+
+                <span class="comment">% Resize each of the channel panel list elements, using standardised spacing.</span>
+                <span class="keyword">for</span> i = 1:length(self.channelNames);
+
+                    set(<span class="keyword">...</span>
+                        self.channelNameLabels(i),<span class="keyword">...</span>
+                        <span class="string">'Position'</span>,[<span class="keyword">...</span>
+                                    self.GUIParameterStruct.channelNamesLabelsRect(1),<span class="keyword">...</span>
+                                    (self.GUIParameterStruct.channelNamesLabelsRect(2) + (1 / 8) * (self.GUIParameterStruct.channelNamesLabelsRect(4) / length(self.channelNames)) + ((i - 1) * self.GUIParameterStruct.channelNamesLabelsRect(4) / length(self.channelNames))),<span class="keyword">...</span>
+                                    self.GUIParameterStruct.channelNamesLabelsRect(3),<span class="keyword">...</span>
+                                    (3 / 4) * (self.GUIParameterStruct.channelNamesLabelsRect(4) / length(self.channelNames))<span class="keyword">...</span>
+                                   ]<span class="keyword">...</span>
+                       );
+
+
+                    set(<span class="keyword">...</span>
+                        self.channelToggleDisplayButtons(i),<span class="keyword">...</span>
+                        <span class="string">'Position'</span>,[<span class="keyword">...</span>
+                                    self.GUIParameterStruct.channelToggleDisplayButtonsRect(1),<span class="keyword">...</span>
+                                    (self.GUIParameterStruct.channelToggleDisplayButtonsRect(2) + (1 / 8) * (self.GUIParameterStruct.channelToggleDisplayButtonsRect(4) / length(self.channelNames)) + ((i - 1) * self.GUIParameterStruct.channelToggleDisplayButtonsRect(4) / length(self.channelNames))),<span class="keyword">...</span>
+                                    self.GUIParameterStruct.channelToggleDisplayButtonsRect(3),<span class="keyword">...</span>
+                                    (3 / 4) * (self.GUIParameterStruct.channelToggleDisplayButtonsRect(4) / length(self.channelNames))<span class="keyword">...</span>
+                                   ]<span class="keyword">...</span>
+                       );
+
+                    set(<span class="keyword">...</span>
+                        self.channelStatusImages(i),<span class="keyword">...</span>
+                        <span class="string">'Position'</span>,[<span class="keyword">...</span>
+                                    self.GUIParameterStruct.channelStatusImagesRect(1),<span class="keyword">...</span>
+                                    (self.GUIParameterStruct.channelStatusImagesRect(2) + (1 / 8) * (self.GUIParameterStruct.channelStatusImagesRect(4) / length(self.channelNames)) + ((i - 1) * self.GUIParameterStruct.channelStatusImagesRect(4) / length(self.channelNames))),<span class="keyword">...</span>
+                                    self.GUIParameterStruct.channelStatusImagesRect(3),<span class="keyword">...</span>
+                                    (3 / 4) * (self.GUIParameterStruct.channelStatusImagesRect(4) / length(self.channelNames))<span class="keyword">...</span>
+                                   ]<span class="keyword">...</span>
+                       );
+
+                <span class="keyword">end</span>
+
+                <span class="comment">% Resize the macro-control buttons.</span>
+                set(self.enableAllChannelDisplaysButton,<span class="string">'Position'</span>,self.GUIParameterStruct.enableAllChannelDisplaysButtonRect);
+                set(self.disableAllChannelDisplaysButton,<span class="string">'Position'</span>,self.GUIParameterStruct.disableAllChannelDisplaysButtonRect);
+                set(self.pauseButton,<span class="string">'Position'</span>,self.GUIParameterStruct.pauseButtonRect);
+
+                <span class="comment">% Resize display axes.</span>
+                set(self.displayAxes,<span class="string">'Position'</span>,self.GUIParameterStruct.displayAxesRect);
+<span class="comment">%                 self.updateAxes();</span>
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function toggleChannelDisplay(self,~,~,channel)<a name="14"></a></h2><p>Operation: Callback function for the buttons that control the channels to be displayed. Input variables:   &gt; channel - integer scalar; index of the channel to be toggled. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> toggleChannelDisplay(self,~,~,channel)
+
+            <span class="keyword">if</span> self.isStarted();
+
+                self.channelDisplays(channel) = ~self.channelDisplays(channel);
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Update the display axes.</span>
+            self.updateAxes();
+
+        <span class="keyword">end</span>
+</pre><h2>function enableAllChannelDisplays(self,~,~)<a name="15"></a></h2><p>Operation: Callback function for the button that causes all of the channels to be displayed. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> enableAllChannelDisplays(self,~,~)
+
+            <span class="keyword">if</span> self.isStarted();
+
+                set(self.channelToggleDisplayButtons(:),<span class="string">'Value'</span>,true);
+                self.channelDisplays(:) = true;
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Update the display axes.</span>
+            self.updateAxes();
+
+        <span class="keyword">end</span>
+</pre><h2>function disableAllChannelDisplays(self,~,~)<a name="16"></a></h2><p>Operation: Callback function for the button that causes none of the channels to be displayed. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> disableAllChannelDisplays(self,~,~)
+
+            <span class="keyword">if</span> self.isStarted();
+
+                set(self.channelToggleDisplayButtons(:),<span class="string">'Value'</span>,false);
+                self.channelDisplays(:) = false;
+
+            <span class="keyword">end</span>
+
+            <span class="comment">% Update the display axes.</span>
+            self.updateAxes();
+
+        <span class="keyword">end</span>
+</pre><h2>function updateStatusImage(self,channel)<a name="17"></a></h2><p>Operation: Update the channel status image. Input variables:   &gt; channel - integer scalar; index of the channel status image to change. Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> updateStatusImage(self,channel)
+
+            <span class="comment">% Check if the GUI window/frame exists.</span>
+            <span class="keyword">if</span> self.isStarted();
+
+                <span class="comment">% Update the channel status image.</span>
+                <span class="keyword">if</span> self.channelStatuses(channel) &gt; 0.5
+
+                    set(self.channelStatusImages(channel),<span class="string">'BackgroundColor'</span>,[(1 - self.channelStatuses(channel)) * 2,1,0]);
+
+                <span class="keyword">elseif</span> self.channelStatuses(channel) &lt; 0.5
+
+                    set(self.channelStatusImages(channel),<span class="string">'BackgroundColor'</span>,[1,self.channelStatuses(channel) * 2,0]);
+
+                <span class="keyword">else</span> <span class="comment">%self.channelStatuses(channel) == 0.5</span>
+
+                    set(self.channelStatusImages(channel),<span class="string">'BackgroundColor'</span>,[1,1,0]);
+
+                <span class="keyword">end</span>
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>function pauseDisplay(self,~,~)<a name="18"></a></h2><p>Operation: Callback function for the pause button. Input variables: N/A Output variables: N/A</p><pre class="codeinput">        <span class="keyword">function</span> pauseDisplay(self,~,~)
+
+            <span class="keyword">if</span> self.isStarted();
+
+                self.isPaused = ~self.isPaused;
+                <span class="keyword">if</span> get(self.pauseButton,<span class="string">'Value'</span>);
+
+                    set(self.pauseButton,<span class="string">'String'</span>,self.GUIParameterStruct.pauseButtonText.PAUSED);
+                    self.pauseBuffer = self.dataBuffer;
+                    self.pauseBufferZeroPointer = self.dataBufferZeroPointer;
+
+                <span class="keyword">else</span>
+
+                    set(self.pauseButton,<span class="string">'String'</span>,self.GUIParameterStruct.pauseButtonText.UNPAUSED);
+                    self.pauseBuffer = [];
+                    self.pauseBufferZeroPointer = 0;
+
+                <span class="keyword">end</span>
+
+                <span class="comment">% Update the display axes.</span>
+                self.updateAxes();
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%%function updateDisplayMode(self,~,~)</span>
+        <span class="comment">% Operation: Update the display mode.</span>
+        <span class="comment">% Input variables: N/A</span>
+        <span class="comment">% Output variables: N/A</span>
+        <span class="keyword">function</span> updateDisplayMode(self,~,~)
+
+            self.displayMode = get(self.modeMenu,<span class="string">'Value'</span>);
+
+            set(<span class="keyword">...</span>
+                self.xAxisScaleMenu,<span class="keyword">...</span>
+                <span class="string">'String'</span>,cellfun(@(array)([num2str(array),<span class="string">' '</span>,self.GUIParameterStruct.xAxisUnit]),num2cell(self.GUIParameterStruct.xAxisScaleValues), <span class="string">'UniformOutput'</span>, false),<span class="keyword">...</span>
+                <span class="string">'Value'</span>,self.xScaleIndex<span class="keyword">...</span>
+               );
+
+           set(<span class="keyword">...</span>
+                self.yAxisScaleMenu,<span class="keyword">...</span>
+                <span class="string">'String'</span>,cellfun(@(array)([num2str(array),<span class="string">' '</span>,self.GUIParameterStruct.yAxisUnit{self.displayMode}]),num2cell(self.GUIParameterStruct.yAxisScaleValues{self.displayMode}), <span class="string">'UniformOutput'</span>, false),<span class="keyword">...</span>
+                <span class="string">'Value'</span>,self.yScaleIndices(self.displayMode)<span class="keyword">...</span>
+               );
+
+        <span class="keyword">end</span>
+
+        <span class="comment">%%function updateAxes(self,~,~)</span>
+        <span class="comment">% Operation: Update the data plots on the display axes.</span>
+        <span class="comment">% Input variables: N/A</span>
+        <span class="comment">% Output variables: N/A</span>
+        <span class="keyword">function</span> updateAxes(self,~,~)
+
+            <span class="keyword">if</span> self.isStarted();
+
+                <span class="comment">% Get the axes scaling indices.</span>
+                self.xScaleIndex = get(self.xAxisScaleMenu,<span class="string">'Value'</span>);
+                self.yScaleIndices(self.displayMode) = get(self.yAxisScaleMenu,<span class="string">'Value'</span>);
+
+                <span class="comment">% Get the axes scaling values.</span>
+                xScale = self.GUIParameterStruct.xAxisScaleValues(self.xScaleIndex);
+                yScale = self.GUIParameterStruct.yAxisScaleValues{self.displayMode}(self.yScaleIndices(self.displayMode)) * self.GUIParameterStruct.yAxisScaleMultipier(self.displayMode);
+
+                <span class="comment">% Check if there is data to be displayed.</span>
+                <span class="keyword">if</span> size(self.dataBuffer,1) &gt; 0
+
+                    <span class="comment">% Build the matrix of data to be displayed.</span>
+                    <span class="keyword">if</span> get(self.pauseButton,<span class="string">'Value'</span>);
+
+                        displayData = self.pauseBuffer;
+
+                    <span class="keyword">else</span>
+
+                        displayData = self.dataBuffer;
+
+                    <span class="keyword">end</span>
+
+                    <span class="comment">% Ensure that the display data is in chronological order.</span>
+                    currentTime = displayData(end,1);
+                    [~,indices] = sort(displayData(:,1));
+                    displayData = displayData(indices,:);
+
+                    <span class="comment">% Calculate the range of the x values.</span>
+                    xMin = currentTime - mod(currentTime,xScale);
+                    xMax = xMin + xScale;
+
+                    <span class="comment">% Curtail data to range of x values.</span>
+                    displayIndices = and((xMin &lt;= displayData(:,1)),(displayData(:,1) &lt; xMax));
+                    displayData = displayData(displayIndices,:);
+                    displayData(:,1) = displayData(:,1) - xMin;
+
+                    <span class="comment">% Curtail data to plots that are to be displayed.</span>
+                    displayIndices = [true,self.channelDisplays];
+                    displayData = displayData(:,displayIndices);
+
+                    <span class="comment">% Scale, recenter, and distribute data over the y axis.</span>
+                    displayData(:,2:end) = displayData(:,2:end) / yScale; <span class="comment">% Scaling.</span>
+                    displayData(:,2:end) = displayData(:,2:end) + 0.5; <span class="comment">% Centering data at 0.5.</span>
+                    displacement = repmat([0,0:(size(displayData,2)-2)],size(displayData,1),1); <span class="comment">% Distribution requires that the y values from any two channels (N) and (N+1) have a difference of 1 between them.</span>
+                    displayData = displayData + displacement; <span class="comment">% Distributing.</span>
+
+                    <span class="comment">% Check if there is data to plot.</span>
+                    <span class="keyword">if</span> size(displayData,2) &gt; 1
+
+                        <span class="comment">% Plot data.</span>
+                        plot(<span class="keyword">...</span>
+                             self.displayAxes,<span class="keyword">...</span>
+                             displayData(:,1),<span class="keyword">...</span>
+                             displayData(:,2:end)<span class="keyword">...</span>
+                            );
+                        line(<span class="keyword">...</span>
+                             [mod(currentTime,xScale),mod(currentTime,xScale)],<span class="keyword">...</span>
+                             [0,sum(self.channelDisplays)],<span class="keyword">...</span>
+                             <span class="string">'Parent'</span>,self.displayAxes,<span class="keyword">...</span>
+                             <span class="string">'Color'</span>,<span class="string">'r'</span><span class="keyword">...</span>
+                            );
+
+                    <span class="keyword">else</span>
+
+                        <span class="comment">% Clear axes.</span>
+                        cla(self.displayAxes);
+
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+
+                <span class="comment">% Set plot axes.</span>
+                xlim(self.displayAxes,[0,xScale]);
+                ylim(self.displayAxes,[0,max(sum(self.channelDisplays),1)]);
+                set(self.displayAxes,<span class="string">'YTick'</span>,([1:sum(self.channelDisplays)] - 0.5));
+                set(self.displayAxes,<span class="string">'YTickLabel'</span>,self.channelNames(self.channelDisplays));
+                xlabel(<span class="keyword">...</span>
+                       self.displayAxes,<span class="keyword">...</span>
+                       self.GUIParameterStruct.xAxisLabel,<span class="keyword">...</span>
+                       <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                      );
+                ylabel(<span class="keyword">...</span>
+                       self.displayAxes,<span class="keyword">...</span>
+                       self.GUIParameterStruct.yAxisLabel,<span class="keyword">...</span>
+                       <span class="string">'FontSize'</span>,self.GUIParameterStruct.fontSize<span class="keyword">...</span>
+                      );
+
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% classdef SignalMonitorGUI < handle
+% Instantiates a graphical user interface to display signal data from the data acquisition unit.
+
+classdef SignalMonitorGUI < handle
+    
+    properties ( Access = private )
+        
+        % Data.
+        displayMode; % Integer scalar; denotes the type of data that is to be displayed by the GUI.
+        xScaleIndex; % Integer scalar; denotes the index of the scale of the x-axis that is to be used by the GUI.
+        yScaleIndices; % [1,D] Integer matrix; denotes the indices of the scale of the y-axis that is to be used by the GUI.
+        channelNames; % [1,N] cell matrix, each cell contains a [1,X] character matrix; new names of the channels for which data is to be displayed.
+        channelStatuses; % [1,N] double matrix, each element is in the range [0,1]; denotes the statuses of the channels.
+        channelDisplays; % [1,N] boolean matrix; determines if the channel is to be displayed. 
+        isPaused; % Boolean scalar; determines if the display is paused.
+        sampleRate; % Double scalar; number of samples of data to be displayed per second.
+        dataBuffer; % [M,N+1] double matrix; data to be displayed when the GUI is not paused. The first row of this matrix is the ordinate data, while the rest is the abscissa data.
+        dataBufferZeroPointer; % Integer scalar; index of the first element in the data buffer.
+        pauseBuffer; % [M,N+1] double matrix; data to be displayed when the GUI is paused. The first row of this matrix is the ordinate data, while the rest is the abscissa data.
+        pauseBufferZeroPointer; % Integer scalar; index of the first element in the pause buffer.
+        
+        % UI elements.
+        frame; % Figure; window/frame that contains the GUI.
+        
+        menuPanel; % UI Panel; contains the drop down menus.
+        modeTitleLabel; % Text box; displays the title of the mode menu;
+        modeMenu; % Drop down menu; allows the user to select the GUI display mode.
+        xAxisScaleTitleLabel; % Text box; displays the title of the x-axis scale menu;
+        xAxisScaleMenu; % Drop down menu; allows the user to select the number of seconds worth of data to be displayed.
+        yAxisScaleTitleLabel; % Text box; displays the title of the y-axis scale menu;
+        yAxisScaleMenu; % Drop down menu; allows the user to select the scaling of the voltage of the data to be displayed.
+        
+        channelPanel; % UI Panel; contains the channel information.
+        channelNameTitleLabel; % Text box; displays the title of the channel name labels.
+        channelToggleDisplayTitleLabel; % Text box; displays the title of the channel display toggle buttons.
+        channelStatusTitleLabel; % Text box; displays the title of channel status images.
+        channelNameLabels; % Text box matrix; display the channel names.
+        channelToggleDisplayButtons; % Toggle button matrix; allow the user to toggle the display of inidividual channels.
+        channelStatusImages; % Image matrix; denote the statuses of the channels.
+        enableAllChannelDisplaysButton; % Push button; used to enable all the channels at once.
+        disableAllChannelDisplaysButton; % Push button; used to disable all the channels at once.
+        pauseButton; % Toggle button; used to pause and unpause the display.
+        
+        displayAxes; % Axes; displays the data plots.
+        
+        % UI element parameters.
+        GUIParameterStruct; % Struct; contains the data pertaining to the GUI layout.
+        
+    end
+    
+    methods ( Access = public )
+        
+        %% Constructor
+        function self = SignalMonitorGUI()
+            
+            addpath(genpath('.'));
+            GUIParameters;
+            self.GUIParameterStruct = GUIParameterStruct;
+            self.displayMode = 1;
+            self.xScaleIndex = self.GUIParameterStruct.xAxisScaleInitialValueIndex;
+            self.yScaleIndices = self.GUIParameterStruct.yAxisScaleInitialValueIndices;
+            self.channelNames = {};
+            self.channelStatuses = [];
+            self.channelDisplays = [];
+            self.isPaused = false;
+            self.sampleRate = 1;
+            self.dataBuffer = [];
+            self.dataBufferZeroPointer = 0;
+            self.pauseBuffer = [];
+            self.pauseBufferZeroPointer = 0;
+            
+        end
+        
+        %% function start(self)
+        % Operation: Creates and displays GUI window/frame and elements.
+        % Input variables: N/A
+        % Output variables: N/A
+        function start(self)
+            
+            % Check if the GUI window/frame does not exist.
+            if ~self.isStarted();
+                
+                % Create new GUI window/frame.
+                self.frame = figure(...
+                                    'Name',self.GUIParameterStruct.frameTitle,...
+                                    'NumberTitle','off',...
+                                    'Units','Normalized',...
+                                    'Toolbar','None',...
+                                    'Menu','None',...
+                                    'ResizeFcn',{@self.resize}...
+                                   );
+
+                % Create the menu panel.
+                self.menuPanel = uipanel(...
+                                         self.frame,...
+                                         'Units','Normalized'...
+                                        );
+                                    
+                % Add the menu titles to the menu panel.
+                self.modeTitleLabel = uicontrol(...
+                                                self.menuPanel,...
+                                                'Style','Text',...
+                                                'Units','Normalized',...
+                                                'String',self.GUIParameterStruct.modeTitle,...
+                                                'FontSize',self.GUIParameterStruct.fontSize...
+                                               );
+                                           
+                self.xAxisScaleTitleLabel = uicontrol(...
+                                                  self.menuPanel,...
+                                                  'Style','Text',...
+                                                  'Units','Normalized',...
+                                                  'String',self.GUIParameterStruct.xAxisScaleTitle,...
+                                                  'FontSize',self.GUIParameterStruct.fontSize...
+                                                 );
+                                             
+                self.yAxisScaleTitleLabel = uicontrol(...
+                                                      self.menuPanel,...
+                                                      'Style','Text',...
+                                                      'Units','Normalized',...
+                                                      'String',self.GUIParameterStruct.yAxisScaleTitle,...
+                                                      'FontSize',self.GUIParameterStruct.fontSize...
+                                                     );
+                                                 
+                % Add the drop down menus to the menu panel.
+                self.modeMenu = uicontrol(...
+                                          self.menuPanel,...
+                                          'Style','Popupmenu',...
+                                          'Units','Normalized',...
+                                          'BackgroundColor','white',...
+                                          'String',self.GUIParameterStruct.modeOptions,...
+                                          'Value',self.displayMode,...
+                                          'FontSize',self.GUIParameterStruct.fontSize,...
+                                          'Callback',{@self.updateDisplayMode}...
+                                         );
+                                     
+                self.xAxisScaleMenu = uicontrol(...
+                                            self.menuPanel,...
+                                            'Style','Popupmenu',...
+                                            'Units','Normalized',...
+                                            'BackgroundColor','white',...
+                                            'String',cellfun(@(array)([num2str(array),' ',self.GUIParameterStruct.xAxisUnit]),num2cell(self.GUIParameterStruct.xAxisScaleValues), 'UniformOutput', false),...
+                                            'Value',self.xScaleIndex,...
+                                            'FontSize',self.GUIParameterStruct.fontSize,...
+                                            'Callback',{@self.updateAxes}...
+                                           );
+            
+                self.yAxisScaleMenu = uicontrol(...
+                                                self.menuPanel,...
+                                                'Style','Popupmenu',...
+                                                'Units','Normalized',...
+                                                'BackgroundColor','white',...
+                                                'String',cellfun(@(array)([num2str(array),' ',self.GUIParameterStruct.yAxisUnit{self.displayMode}]),num2cell(self.GUIParameterStruct.yAxisScaleValues{self.displayMode}), 'UniformOutput', false),...
+                                                'Value',self.yScaleIndices(self.displayMode),...
+                                                'FontSize',self.GUIParameterStruct.fontSize,...
+                                                'Callback',{@self.updateAxes}...
+                                               );
+
+                % Create the channel panel.
+                self.channelPanel = uipanel(...
+                                            self.frame,...
+                                            'Units','Normalized'...
+                                           );
+                                       
+                % Add the channel titles to the channel panel.
+                self.channelNameTitleLabel = uicontrol(...
+                                                   self.channelPanel,...
+                                                   'Style','Text',...
+                                                   'Units','Normalized',...
+                                                   'String',self.GUIParameterStruct.channelNameTitle,...
+                                                   'FontSize',self.GUIParameterStruct.fontSize...
+                                                  );
+                self.channelToggleDisplayTitleLabel = uicontrol(...
+                                                                self.channelPanel,...
+                                                                'Style','Text',...
+                                                                'Units','Normalized',...
+                                                                'String',self.GUIParameterStruct.channelToggleDisplayTitle,...
+                                                                'FontSize',self.GUIParameterStruct.fontSize...
+                                                               );
+                self.channelStatusTitleLabel = uicontrol(...
+                                                         self.channelPanel,...
+                                                         'Style','Text',...
+                                                         'Units','Normalized',...
+                                                         'String',self.GUIParameterStruct.channelStatusTitle,...
+                                                         'FontSize',self.GUIParameterStruct.fontSize...
+                                                        );
+
+                % Declare the channel UI elements.
+                self.channelNameLabels = zeros(1,length(self.channelNames));
+                self.channelToggleDisplayButtons = zeros(1,length(self.channelNames));
+                self.channelStatusImages = zeros(1,length(self.channelNames));
+                
+                % Initialise the channel UI elements.
+                for i = 1:length(self.channelNames);
+
+                    % Initialise the channel name labels.
+                    self.channelNameLabels(i) = uicontrol(...
+                                                          self.channelPanel,...
+                                                          'Style','Text',...
+                                                          'Units','Normalized',...
+                                                          'String',self.channelNames{i},...
+                                                          'FontSize',self.GUIParameterStruct.fontSize...
+                                                         );
+
+                    % Initialise the channel toggle buttons.
+                    self.channelToggleDisplayButtons(i) = uicontrol(...
+                                                                    self.channelPanel,...
+                                                                    'Style','Togglebutton',...
+                                                                    'Value',self.channelDisplays(i),...
+                                                                    'Units','Normalized',...
+                                                                    'String',num2str(length(self.channelNames) - i + 1),...
+                                                                    'FontSize',self.GUIParameterStruct.fontSize,...
+                                                                    'Callback',{@self.toggleChannelDisplay,i}...
+                                                                   );
+                                                               
+                    % Initialise the channel status images.
+                    self.channelStatusImages(i) = uipanel(...
+                                                            self.channelPanel,...
+                                                            'Units','Normalized',...
+                                                            'BackgroundColor',[0,1,0]...
+                                                           );
+                                                       
+                    % Update the channel status images.
+                    updateStatusImage(self,i);
+
+                end
+                
+                % Initialise the macro-control buttons.
+                self.enableAllChannelDisplaysButton = uicontrol(...
+                                                                self.channelPanel,...
+                                                                'Style','Pushbutton',...
+                                                                'Units','Normalized',...
+                                                                'String',self.GUIParameterStruct.enableAllChannelDisplaysButtonText,...
+                                                                'FontSize',self.GUIParameterStruct.fontSize,...
+                                                                'Callback',{@self.enableAllChannelDisplays}...
+                                                               );
+                self.disableAllChannelDisplaysButton = uicontrol(...
+                                                                self.channelPanel,...
+                                                                'Style','Pushbutton',...
+                                                                'Units','Normalized',...
+                                                                'String',self.GUIParameterStruct.disableAllChannelDisplaysButtonText,...
+                                                                'FontSize',self.GUIParameterStruct.fontSize,...
+                                                                'Callback',{@self.disableAllChannelDisplays}...
+                                                               );
+                                                           
+                self.pauseButton = uicontrol(...
+                                             self.channelPanel,...
+                                             'Style','Togglebutton',...
+                                             'Value',self.isPaused,...
+                                             'Units','Normalized',...
+                                             'String',self.GUIParameterStruct.pauseButtonText.UNPAUSED,...
+                                             'FontSize',self.GUIParameterStruct.fontSize,...
+                                             'Callback',{@self.pauseDisplay}...
+                                            );
+
+                % Create the data axes.
+                self.displayAxes = axes(...
+                                        'Parent',self.frame,...
+                                        'Units','Normalized',...
+                                        'FontSize',self.GUIParameterStruct.fontSize...
+                                       );
+                                   
+                % Update the display axes.
+                self.updateAxes();
+
+                % Maximise GUI window/frame.
+                drawnow;
+                f = get(handle(self.frame),'JavaFrame');
+                f.setMaximized(true);
+
+            end
+            
+        end
+        
+        %% function stop(self)
+        % Operation: Destroys GUI window/frame and elements.
+        % Input variables: N/A
+        % Output variables: N/A
+        function stop(self)
+            
+            if self.isStarted();
+                
+                % Destroy window/frame.
+                close(self.frame);
+                
+            end
+            
+        end
+        
+        %% started = isStarted(self)
+        % Operation: Destroys GUI window/frame and elements.
+        % Input variables: N/A
+        % Output variables:
+        %   > started - boolean scalar; determines if the GUI window exists.
+        function started = isStarted(self)
+            
+            started = isa(handle(self.frame),'figure');
+            
+        end
+        
+        %% function mode = getDisplayMode(self)
+        % Operation: Returns the mode of the GUI. The mode is a numeral that denotes the type of data that is to be displayed by the GUI.
+        % Input variables: N/A
+        % Output variables:
+        %   > mode - integer scalar; denotes the type of data that is to be displayed by the GUI.
+        function mode = getDisplayMode(self)
+            
+            mode = self.displayMode;
+            
+        end
+        
+        %% function setChannelNames(self,newChannelNames)
+        % Operation: Changes the names of the channels for which data is to be displayed.
+        % Input variables:
+        %   > newChannelNames - [1,N] cell matrix, each cell contains a [1,X] character matrix; new names of the channels for which data is to be displayed.
+        % Output variables: N/A
+        function setChannelNames(self,newChannelNames)
+            
+            assert(isa(newChannelNames,'cell')); % Assert that newChannelNames is a cell type.
+            assert(ndims(newChannelNames) == 2); % Assert that newChannelNames is a {0,1,2} dimensional cell matrix.
+            assert(size(newChannelNames,1) <= 1); % Assert that newChannelNames is either a [1,N] cell matrix, or an empty cell matrix.
+            for i = length(newChannelNames);
+                
+                assert(isa(newChannelNames{i},'char')); % Assert that every element of newChannelNames is a character matrix.
+                
+            end
+            
+            % If all of the above asserts are successful, set the value of channelNames to newChannelNames.
+            self.channelNames = fliplr(newChannelNames);
+            
+            % Reset channel info.
+            self.channelStatuses = ones(1,length(self.channelNames));
+            self.channelDisplays = true(1,length(self.channelNames));
+            self.dataBuffer = zeros(0,length(self.channelNames) + 1);
+            self.dataBufferZeroPointer = 0;
+            self.pauseBuffer = zeros(0,length(self.channelNames) + 1);
+            self.pauseBufferZeroPointer = 0;
+            
+            % Check if the GUI window/frame exists.
+            if self.isStarted();
+                
+                % Redraw the GUI.
+                self.stop();
+                self.start();
+            
+            end
+            
+        end
+        
+        %% function setSampleRate(self,newSampleRate)
+        % Operation: Changes the names of the channels for which data is to be displayed.
+        % Input variables:
+        %   > newSampleRate - double scalar; number of samples of data to be displayed per second.
+        % Output variables: N/A
+        function setSampleRate(self,newSampleRate)
+            
+            assert(isa(newSampleRate,'double')); % Assert that newSampleRate is a double type.
+            assert(isscalar(newSampleRate)); % Assert that newSampleRate is a double scalar.
+            assert(0 < newSampleRate && newSampleRate < Inf); % Assert that newSampleRate is positive and finite.
+            
+            % If all of the above asserts are successful, set the value of sampleRate to newSampleRate.
+            self.sampleRate = newSampleRate;
+            
+        end
+        
+        %% function setChannelStatus(self,channel,status)
+        % Operation: Changes the channel status image next to a channel name label.
+        % Input variables:
+        %   > channel - integer scalar; index of the channel to be updated.
+        %   > status - double scalar; denotes the status of the channel.
+        % Output variables: N/A
+        function setChannelStatus(self,channel,status)
+            
+            assert(isnumeric(channel)); % Assert that channel is a numeric type.
+            assert(mod(channel,1) == 0); % Assert that channel is an integer type.
+            assert(isscalar(channel)); % Assert that channel is an integer scalar.
+            assert(1 <= channel && channel <= length(self.channelStatuses)); % Assert that channel is in the range of indices of the channelStatuses matrix.
+            
+            assert(isa(status,'double')); % Assert that status is a double type.
+            assert(isscalar(status)); % Assert that status is a double scalar.
+            assert(0 <= status && status <= 1); % Assert that status is within the range [0,1].
+            
+            % If all of the above asserts are successful, set the value of channelStatuses(channel) to status.
+            channel = length(self.channelNames) - channel + 1; % First flip the channel.
+            self.channelStatuses(channel) = status;
+            
+            % Update the channel status images.
+            self.updateStatusImage(channel);
+            
+            % Update the display axes.
+            self.updateAxes();
+            
+        end
+        
+        %% function addData(self,data)
+        % Operation: Adds the specified data to the buffer of data to be displayed.
+        % Input variables:
+        %   > data - [M,N] double matrix; new data to be added to the buffer of data to be displayed.
+        % Output variables: N/A
+        function addData(self,newData)
+            
+            assert(isa(newData,'double')); % Assert that data is a double type.
+            assert(ndims(newData) == 2); % Assert that data is a {0,1,2} dimensional cell matrix.
+            assert(size(newData,2) == length(self.channelNames)); % Assert that data is a [M,N] matrix, for any M and such that N is the number of channels.
+            
+            % If all of the above asserts are successful, get the maximum value for the buffer size, in seconds.
+            bufferLimit = max(self.GUIParameterStruct.xAxisScaleValues);
+            
+            % Flip the data.
+            newData = fliplr(newData);
+            
+            % Add the data to the data buffer.
+            if size(self.dataBuffer,1) == 0
+                
+                timestampData = transpose([0:(size(newData,1) - 1)]);
+                timestampData = (timestampData / self.sampleRate);
+                self.dataBufferZeroPointer = 1;
+                
+            else
+                
+                timestampData = transpose([1:size(newData,1)]);
+                timestampData = (timestampData / self.sampleRate) + self.dataBuffer(end,1);
+                
+            end
+            newData = [timestampData,newData];
+            self.dataBuffer = [self.dataBuffer;newData];
+            
+            % If the data exceeds the buffer limit...
+            if self.dataBuffer(end,1) > bufferLimit
+                
+                % Iterate backwards over the data, from the last to the first element.
+                % For each element in this iteration, subtract the buffer limit from the time stamp data.
+                % When the first element to not exceed the buffer limit is reached, set the data buffer zero pointer to the index of that element plus one, and then terminate the loop.
+                index = size(self.dataBuffer,1);
+                loop = true;
+                while loop
+                    
+                    % If the index is less than 1, terminate the loop.
+                    if index < 1
+                        
+                        loop = false;
+                        
+                    else
+                        
+                        % Check if the current element exceeds the buffer limit.
+                        if self.dataBuffer(index,1) > bufferLimit
+
+                            % Subtract the buffer limit from the time stamp data.
+                            self.dataBuffer(index,1) = self.dataBuffer(index,1) - bufferLimit;
+                            
+                            index = index - 1;
+
+                        else
+
+                            % Set the data buffer zero pointer to the index of that element plus one, and then terminate the loop.
+                            self.dataBufferZeroPointer = index + 1;
+                            loop = false;
+
+                        end
+                        
+                    end
+                    
+                    
+                end
+                
+            end
+            
+            % Iterate backwards over the data, from the zero pointer to the first element.
+            % If the time stamp data of the respective elements is less than the time stamp data of the last element, remove that element from the data.
+            % If the zero pointer is reached, terminate the loop.
+            index = self.dataBufferZeroPointer - 1;
+            loop = true;
+            lowerBound = 1;
+            while loop
+                
+                % If the index is less than 1, terminate the loop.
+                if index < 1
+
+                    loop = false;
+                    
+                else
+                    
+                    if self.dataBuffer(index,1) < self.dataBuffer(end,1)
+                    
+                        lowerBound = index + 1;
+                        loop = false;
+                        
+                    else
+                        
+                        index = index - 1;
+
+                    end
+
+                end
+                
+            end
+            self.dataBufferZeroPointer = self.dataBufferZeroPointer - lowerBound + 1;
+            indices = [lowerBound:size(self.dataBuffer,1)];
+            self.dataBuffer = self.dataBuffer(indices,:);
+            
+            % Update the display axes.
+            self.updateAxes();
+            
+        end
+        
+    end
+    
+    methods ( Access = private )
+        
+        %% function resize(self,~,~)
+        % Operation: If the GUI window/frame exists, resets the positions of all its elements.
+        % Input variables: N/A
+        % Output variables: N/A
+        function resize(self,~,~)
+            
+            % Check if the GUI window/frame exists.
+            if self.isStarted();
+                
+                % Resize menu panel elements.
+                set(self.menuPanel,'Position',self.GUIParameterStruct.menuPanelRect);
+                set(self.modeTitleLabel,'Position',self.GUIParameterStruct.modeTitleRect);
+                set(self.xAxisScaleTitleLabel,'Position',self.GUIParameterStruct.xAxisScaleTitleRect);
+                set(self.yAxisScaleTitleLabel,'Position',self.GUIParameterStruct.yAxisScaleTitleRect);
+                set(self.modeMenu,'Position',self.GUIParameterStruct.modeMenuRect);
+                set(self.xAxisScaleMenu,'Position',self.GUIParameterStruct.xAxisScaleMenuRect);
+                set(self.yAxisScaleMenu,'Position',self.GUIParameterStruct.yAxisScaleMenuRect);
+                
+                % Resize channel panel elements.
+                set(self.channelPanel,'Position',self.GUIParameterStruct.channelPanelRect);
+                set(self.channelNameTitleLabel,'Position',self.GUIParameterStruct.channelNameTitleRect);
+                set(self.channelToggleDisplayTitleLabel,'Position',self.GUIParameterStruct.channelToggleDisplayTitleRect);
+                set(self.channelStatusTitleLabel,'Position',self.GUIParameterStruct.channelStatusTitleRect);
+                
+                % Resize each of the channel panel list elements, using standardised spacing.
+                for i = 1:length(self.channelNames);
+                    
+                    set(...
+                        self.channelNameLabels(i),...
+                        'Position',[...
+                                    self.GUIParameterStruct.channelNamesLabelsRect(1),...
+                                    (self.GUIParameterStruct.channelNamesLabelsRect(2) + (1 / 8) * (self.GUIParameterStruct.channelNamesLabelsRect(4) / length(self.channelNames)) + ((i - 1) * self.GUIParameterStruct.channelNamesLabelsRect(4) / length(self.channelNames))),...
+                                    self.GUIParameterStruct.channelNamesLabelsRect(3),...
+                                    (3 / 4) * (self.GUIParameterStruct.channelNamesLabelsRect(4) / length(self.channelNames))...
+                                   ]...
+                       );
+                    
+                    
+                    set(...
+                        self.channelToggleDisplayButtons(i),...
+                        'Position',[...
+                                    self.GUIParameterStruct.channelToggleDisplayButtonsRect(1),...
+                                    (self.GUIParameterStruct.channelToggleDisplayButtonsRect(2) + (1 / 8) * (self.GUIParameterStruct.channelToggleDisplayButtonsRect(4) / length(self.channelNames)) + ((i - 1) * self.GUIParameterStruct.channelToggleDisplayButtonsRect(4) / length(self.channelNames))),...
+                                    self.GUIParameterStruct.channelToggleDisplayButtonsRect(3),...
+                                    (3 / 4) * (self.GUIParameterStruct.channelToggleDisplayButtonsRect(4) / length(self.channelNames))...
+                                   ]...
+                       );
+                    
+                    set(...
+                        self.channelStatusImages(i),...
+                        'Position',[...
+                                    self.GUIParameterStruct.channelStatusImagesRect(1),...
+                                    (self.GUIParameterStruct.channelStatusImagesRect(2) + (1 / 8) * (self.GUIParameterStruct.channelStatusImagesRect(4) / length(self.channelNames)) + ((i - 1) * self.GUIParameterStruct.channelStatusImagesRect(4) / length(self.channelNames))),...
+                                    self.GUIParameterStruct.channelStatusImagesRect(3),...
+                                    (3 / 4) * (self.GUIParameterStruct.channelStatusImagesRect(4) / length(self.channelNames))...
+                                   ]...
+                       );
+                   
+                end
+                
+                % Resize the macro-control buttons.
+                set(self.enableAllChannelDisplaysButton,'Position',self.GUIParameterStruct.enableAllChannelDisplaysButtonRect);
+                set(self.disableAllChannelDisplaysButton,'Position',self.GUIParameterStruct.disableAllChannelDisplaysButtonRect);
+                set(self.pauseButton,'Position',self.GUIParameterStruct.pauseButtonRect);
+                
+                % Resize display axes.
+                set(self.displayAxes,'Position',self.GUIParameterStruct.displayAxesRect);
+%                 self.updateAxes();
+                
+            end
+            
+        end
+        
+        %% function toggleChannelDisplay(self,~,~,channel)
+        % Operation: Callback function for the buttons that control the channels to be displayed.
+        % Input variables:
+        %   > channel - integer scalar; index of the channel to be toggled.
+        % Output variables: N/A
+        function toggleChannelDisplay(self,~,~,channel)
+            
+            if self.isStarted();
+            
+                self.channelDisplays(channel) = ~self.channelDisplays(channel);
+            
+            end
+            
+            % Update the display axes.
+            self.updateAxes();
+            
+        end
+        
+        %% function enableAllChannelDisplays(self,~,~)
+        % Operation: Callback function for the button that causes all of the channels to be displayed.
+        % Input variables: N/A
+        % Output variables: N/A
+        function enableAllChannelDisplays(self,~,~)
+            
+            if self.isStarted();
+            
+                set(self.channelToggleDisplayButtons(:),'Value',true);
+                self.channelDisplays(:) = true;
+            
+            end
+            
+            % Update the display axes.
+            self.updateAxes();
+            
+        end
+        
+        %% function disableAllChannelDisplays(self,~,~)
+        % Operation: Callback function for the button that causes none of the channels to be displayed.
+        % Input variables: N/A
+        % Output variables: N/A
+        function disableAllChannelDisplays(self,~,~)
+            
+            if self.isStarted();
+            
+                set(self.channelToggleDisplayButtons(:),'Value',false);
+                self.channelDisplays(:) = false;
+            
+            end
+            
+            % Update the display axes.
+            self.updateAxes();
+            
+        end
+        
+        %% function updateStatusImage(self,channel)
+        % Operation: Update the channel status image.
+        % Input variables:
+        %   > channel - integer scalar; index of the channel status image to change.
+        % Output variables: N/A
+        function updateStatusImage(self,channel)
+            
+            % Check if the GUI window/frame exists.
+            if self.isStarted();
+                
+                % Update the channel status image.
+                if self.channelStatuses(channel) > 0.5
+                    
+                    set(self.channelStatusImages(channel),'BackgroundColor',[(1 - self.channelStatuses(channel)) * 2,1,0]);
+                
+                elseif self.channelStatuses(channel) < 0.5
+                    
+                    set(self.channelStatusImages(channel),'BackgroundColor',[1,self.channelStatuses(channel) * 2,0]);
+                    
+                else %self.channelStatuses(channel) == 0.5
+                    
+                    set(self.channelStatusImages(channel),'BackgroundColor',[1,1,0]);
+                    
+                end
+                
+            end
+            
+        end
+        
+        %% function pauseDisplay(self,~,~)
+        % Operation: Callback function for the pause button.
+        % Input variables: N/A
+        % Output variables: N/A
+        function pauseDisplay(self,~,~)
+            
+            if self.isStarted();
+            
+                self.isPaused = ~self.isPaused;
+                if get(self.pauseButton,'Value');
+
+                    set(self.pauseButton,'String',self.GUIParameterStruct.pauseButtonText.PAUSED);
+                    self.pauseBuffer = self.dataBuffer;
+                    self.pauseBufferZeroPointer = self.dataBufferZeroPointer;
+
+                else
+
+                    set(self.pauseButton,'String',self.GUIParameterStruct.pauseButtonText.UNPAUSED);
+                    self.pauseBuffer = [];
+                    self.pauseBufferZeroPointer = 0;
+
+                end
+                
+                % Update the display axes.
+                self.updateAxes();
+            
+            end
+            
+        end
+        
+        %%function updateDisplayMode(self,~,~)
+        % Operation: Update the display mode.
+        % Input variables: N/A
+        % Output variables: N/A
+        function updateDisplayMode(self,~,~)
+            
+            self.displayMode = get(self.modeMenu,'Value');
+            
+            set(...
+                self.xAxisScaleMenu,...
+                'String',cellfun(@(array)([num2str(array),' ',self.GUIParameterStruct.xAxisUnit]),num2cell(self.GUIParameterStruct.xAxisScaleValues), 'UniformOutput', false),...
+                'Value',self.xScaleIndex...
+               );
+           
+           set(...
+                self.yAxisScaleMenu,...
+                'String',cellfun(@(array)([num2str(array),' ',self.GUIParameterStruct.yAxisUnit{self.displayMode}]),num2cell(self.GUIParameterStruct.yAxisScaleValues{self.displayMode}), 'UniformOutput', false),...
+                'Value',self.yScaleIndices(self.displayMode)...
+               );
+            
+        end
+        
+        %%function updateAxes(self,~,~)
+        % Operation: Update the data plots on the display axes.
+        % Input variables: N/A
+        % Output variables: N/A
+        function updateAxes(self,~,~)
+            
+            if self.isStarted();
+            
+                % Get the axes scaling indices.
+                self.xScaleIndex = get(self.xAxisScaleMenu,'Value');
+                self.yScaleIndices(self.displayMode) = get(self.yAxisScaleMenu,'Value');
+                
+                % Get the axes scaling values.
+                xScale = self.GUIParameterStruct.xAxisScaleValues(self.xScaleIndex);
+                yScale = self.GUIParameterStruct.yAxisScaleValues{self.displayMode}(self.yScaleIndices(self.displayMode)) * self.GUIParameterStruct.yAxisScaleMultipier(self.displayMode);
+                
+                % Check if there is data to be displayed.
+                if size(self.dataBuffer,1) > 0
+
+                    % Build the matrix of data to be displayed.
+                    if get(self.pauseButton,'Value');
+
+                        displayData = self.pauseBuffer;
+
+                    else
+
+                        displayData = self.dataBuffer;
+
+                    end
+                    
+                    % Ensure that the display data is in chronological order.
+                    currentTime = displayData(end,1);
+                    [~,indices] = sort(displayData(:,1));
+                    displayData = displayData(indices,:);
+
+                    % Calculate the range of the x values.
+                    xMin = currentTime - mod(currentTime,xScale);
+                    xMax = xMin + xScale;
+                    
+                    % Curtail data to range of x values.
+                    displayIndices = and((xMin <= displayData(:,1)),(displayData(:,1) < xMax));
+                    displayData = displayData(displayIndices,:);
+                    displayData(:,1) = displayData(:,1) - xMin;
+                    
+                    % Curtail data to plots that are to be displayed.
+                    displayIndices = [true,self.channelDisplays];
+                    displayData = displayData(:,displayIndices);
+
+                    % Scale, recenter, and distribute data over the y axis.
+                    displayData(:,2:end) = displayData(:,2:end) / yScale; % Scaling.
+                    displayData(:,2:end) = displayData(:,2:end) + 0.5; % Centering data at 0.5.
+                    displacement = repmat([0,0:(size(displayData,2)-2)],size(displayData,1),1); % Distribution requires that the y values from any two channels (N) and (N+1) have a difference of 1 between them.
+                    displayData = displayData + displacement; % Distributing.
+
+                    % Check if there is data to plot.
+                    if size(displayData,2) > 1
+                        
+                        % Plot data.
+                        plot(...
+                             self.displayAxes,...
+                             displayData(:,1),...
+                             displayData(:,2:end)...
+                            );
+                        line(...
+                             [mod(currentTime,xScale),mod(currentTime,xScale)],...
+                             [0,sum(self.channelDisplays)],...
+                             'Parent',self.displayAxes,...
+                             'Color','r'...
+                            );
+                        
+                    else
+                        
+                        % Clear axes.
+                        cla(self.displayAxes);
+                        
+                    end
+
+                end
+                
+                % Set plot axes.
+                xlim(self.displayAxes,[0,xScale]);
+                ylim(self.displayAxes,[0,max(sum(self.channelDisplays),1)]);
+                set(self.displayAxes,'YTick',([1:sum(self.channelDisplays)] - 0.5));
+                set(self.displayAxes,'YTickLabel',self.channelNames(self.channelDisplays));
+                xlabel(...
+                       self.displayAxes,...
+                       self.GUIParameterStruct.xAxisLabel,...
+                       'FontSize',self.GUIParameterStruct.fontSize...
+                      );
+                ylabel(...
+                       self.displayAxes,...
+                       self.GUIParameterStruct.yAxisLabel,...
+                       'FontSize',self.GUIParameterStruct.fontSize...
+                      );
+            
+            end
+            
+        end
+        
+    end
+    
+end
+
+
+##### SOURCE END #####
+--></body></html>
